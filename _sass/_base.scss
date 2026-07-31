@@ -1,0 +1,9 @@
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--navy-deep);
+  font-family:'Inter',-apple-system,sans-serif;
+  color:var(--black);
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit; text-decoration:none;}
