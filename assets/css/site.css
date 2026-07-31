@@ -283,7 +283,8 @@ article{
 article p{
   margin:0 0 22px;
 }
-article h2{
+article h2,
+.list-section-title{
   font-family:'Oswald',sans-serif;
   font-weight:600;
   font-size:23px;
@@ -292,6 +293,10 @@ article h2{
   margin:44px 0 18px;
   border-top:3px solid var(--yellow);
   padding-top:14px;
+}
+h2.list-section-title{
+  border-top:none;
+  border-bottom:3px solid var(--yellow);
 }
 article h2:first-of-type{
   margin-top:8px;
