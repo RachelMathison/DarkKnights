@@ -126,3 +126,10 @@
 .nav-dropdown-panel a:hover{
   background:var(--gray-100);
 }
+@media (max-width:700px){
+  .nav-dropdown-panel{
+    left:0;
+    transform:none;
+    min-width:200px;
+  }
+}
