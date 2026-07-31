@@ -717,6 +717,10 @@ footer p{
   justify-content: center;
 }
 
+@media (max-width:700px){
+  .logo-circle { width: 35px; height: 35px; }
+}
+
 .logo-circle img {
   height: 60%;
   object-fit: contain;
