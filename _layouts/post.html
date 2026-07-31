@@ -4,8 +4,8 @@ layout: default
 <div class="breadcrumb">
   <a class="back" href="{{ '/' | relative_url }}">&larr; All Articles</a>
   {% for tag in page.tags %}
-    {% if forloop.first %}<span class="tag accent">{{ tag }}</span>
-    {% elsif forloop.index == 2 %}<span class="tag navy">{{ tag }}</span>
+    {% if forloop.first %}<span class="tag navy">{{ tag }}</span>
+    {% elsif forloop.index == 2 %}<span class="tag accent">{{ tag }}</span>
     {% else %}<span class="tag">{{ tag }}</span>
     {% endif %}
   {% endfor %}

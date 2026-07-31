@@ -18,7 +18,7 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: Dark Knights Insider
+title: Dark Knights Hockey
 description: Winterhawks Adult Hockey — Bronze Division
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://darkknightshockey.com" # the base hostname & protocol for your site, e.g. http://example.com

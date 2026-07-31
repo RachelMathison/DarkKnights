@@ -1,8 +1,8 @@
 ---
 layout: post
-title: "Same Record, Opposite Identities: Knights and Wild Set for a Coin-Flip Series"
+title: "Knights and Wild Set for a Coin-Flip Semifinal"
 dek: "The Dark Knights enter next week's semifinal the way they've played all season: dangerous, deep, and one bad penalty away from making life harder than it needs to be. Here's the case for how this team gets out of round one."
-tags: ["Playoffs", "Semifinal Preview", "Summer 2026"]
+tags: ["Summer 2026", "Playoffs", "Semifinal Preview"]
 header_image: /assets/images/site/wild-vs-knights.png
 header_image_alt: "Wild vs Dark Knights"
 ---
