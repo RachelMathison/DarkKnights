@@ -1,0 +1,79 @@
+---
+layout: default
+title: Schedule
+permalink: /schedule/
+---
+<!-- 1. FullCalendar & iCal Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/icalendar@6.1.11/index.global.min.js"></script>
+
+<!-- 2. Container for the calendar -->
+<div id="calendar"></div>
+
+<!-- 3. Initialization Script -->
+<script>
+ document.addEventListener('DOMContentLoaded', function() {
+  const calendarEl = document.getElementById('calendar');
+
+  // Map your target keywords to their respective image URLs
+  const teamLogos = {
+    red: '/assets/images/site/red.png',   // Replace with your actual path or URL
+    crows: '/assets/images/site/crows.png', // Replace with your actual path or URL
+    wild: '/assets/images/site/wild.png'  // Replace with your actual path or URL
+  };
+
+  // Helper function to match title against options
+  function getLogoFromTitle(title) {
+    if (!title) return '/assets/images/default.png';
+    
+    const lowerTitle = title.toLowerCase();
+    
+    if (lowerTitle.includes('red')) return teamLogos.red;
+    if (lowerTitle.includes('crows')) return teamLogos.crows;
+    if (lowerTitle.includes('wild')) return teamLogos.wild;
+
+    return '/assets/images/default.png'; // Fallback image if none match
+  }
+
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    height: 'auto',          // Prevents FC from stretching rows to fill a fixed pixel height
+    aspectRatio: 1.35,       // Keeps grid cells proportionally square-ish
+    headerToolbar: {
+      left: 'title',
+      center: '',
+      right: 'prev,next today'
+    },
+    events: {
+      url: 'https://corsproxy.io/?https://wicadulthockey.sportngin.com/ical_feed?tags=9444290',
+      format: 'ics'
+    },
+
+    // Custom HTML renderer for each event
+    eventContent: function(arg) {
+      const eventTitle = arg.event.title;
+      const logoUrl = getLogoFromTitle(eventTitle);
+      
+      const timeStr = arg.event.start.toLocaleTimeString([], { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        timeZoneName: 'short' 
+      });
+
+      return {
+        html: `
+          <div class="custom-event-card">
+            <div class="logo-circle">
+              <img src="${logoUrl}" alt="${eventTitle}" />
+            </div>
+            <div class="game-time">${timeStr}</div>   
+          </div>
+        `
+      };
+    }
+  });
+
+  calendar.render();
+});
+</script>

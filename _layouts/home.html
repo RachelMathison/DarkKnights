@@ -1,13 +1,15 @@
 ---
 layout: default
 ---
-<div class="list-heading first">Latest</div>
+<div class="list-heading first">Latest News</div>
 <div class="article-list">
-  {% for post in site.posts %}
+  {% assign recent_posts = site.posts | limit: 5 %}
+  {% for post in recent_posts %}
   <a class="article-card" href="{{ post.url | relative_url }}">
     {% if post.header_image %}
     <div class="article-card-thumb">
       <img src="{{ post.header_image | relative_url }}" alt="{{ post.header_image_alt | default: post.title }}">
+      <div class="article-card-thumb-icon"><span></span></div>
     </div>
     {% endif %}
     <div class="article-card-body">
@@ -21,7 +23,10 @@ layout: default
       </div>
       <h2 class="article-card-title">{{ post.title }}</h2>
       <p class="article-card-dek">{{ post.dek }}</p>
-      <div class="article-card-date">{{ post.date | date: "%B %-d, %Y" }}</div>
+      <div class="article-card-footer">
+        <div class="article-card-date">{{ post.date | date: "%B %-d, %Y" }}</div>
+        <div class="article-card-cta">Read Full Article &rarr;</div>
+      </div>
     </div>
   </a>
   {% endfor %}
@@ -30,3 +35,9 @@ layout: default
     <div class="empty-state">No articles yet — add a post to _posts/.</div>
   {% endif %}
 </div>
+
+{% if site.posts.size > 5 %}
+<div class="archive-link-row">
+  <a class="archive-link" href="{{ '/archive/' | relative_url }}">View Full Archive &rarr;</a>
+</div>
+{% endif %}
