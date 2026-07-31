@@ -42,7 +42,7 @@ If the Knights play their identity — deep scoring, relentless pressure that bu
 
 <div class="pullquote">
   <span class="label">The formula</span>
-  Score first, keep a lid on Barajas and Oleary both, stay above the fray when Wild tries to bait penalties, and let a top-flight penalty kill and a four-deep scoring attack do the rest.
+  Score first, keep a lid on Barajas and Oleary both, stay above the fray when Wild tries to bait penalties, and let a top-flight penalty kill and a deep scoring attack do the rest.
 </div>
 
 <div class="cta">
