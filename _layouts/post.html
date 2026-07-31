@@ -1,0 +1,30 @@
+---
+layout: default
+---
+<div class="breadcrumb">
+  <a class="back" href="{{ '/' | relative_url }}">&larr; All Articles</a>
+  {% for tag in page.tags %}
+    {% if forloop.first %}<span class="tag accent">{{ tag }}</span>
+    {% elsif forloop.index == 2 %}<span class="tag navy">{{ tag }}</span>
+    {% else %}<span class="tag">{{ tag }}</span>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<h1 class="headline">{{ page.title }}</h1>
+<p class="dek">{{ page.dek }}</p>
+
+<div class="byline-row">
+  <div class="who">By <strong>{{ page.author | default: "Dark Knights Insider Staff" }}</strong></div>
+  <div class="date">{{ page.date | date: "%B %-d, %Y" }}</div>
+</div>
+
+{% if page.header_image %}
+<div class="header-image">
+  <img src="{{ page.header_image | relative_url }}" alt="{{ page.header_image_alt | default: page.title }}">
+</div>
+{% endif %}
+
+<article>
+  {{ content }}
+</article>
