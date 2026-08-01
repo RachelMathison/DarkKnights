@@ -8,9 +8,22 @@
       </div>
     </a>
     <nav class="site-nav">
-      <a href="{{ '/' | relative_url }}"{% if page.layout == 'home' %} class="active"{% endif %}>News</a>
-      <a href="https://wicadulthockey.sportngin.com/schedule/team_instance/10525095" target="_blank" rel="noopener">Schedule</a>
+      <div class="nav-dropdown">
+        <button type="button" class="nav-trigger{% if page.layout == 'home' or page.url == '/archive/' %} active{% endif %}" onclick="this.closest('.nav-dropdown').classList.toggle('open')">News</button>
+        <div class="nav-dropdown-panel">
+          <a href="{{ '/' | relative_url }}"{% if page.layout == 'home' %} class="current"{% endif %}>Latest News</a>
+          <a href="{{ '/archive/' | relative_url }}"{% if page.url == '/archive/' %} class="current"{% endif %}>Archive</a>
+        </div>
+      </div><a href="{{ '/schedule/' | relative_url }}"{% if page.url == '/schedule/' %} class="active"{% endif %}>Schedule</a>
       <a href="https://wicadulthockey.sportngin.com/standings/show/9444290" target="_blank" rel="noopener">Standings</a>
     </nav>
   </div>
 </div>
+
+<script>
+  document.addEventListener('click', function (e) {
+    document.querySelectorAll('.nav-dropdown.open').forEach(function (dd) {
+      if (!dd.contains(e.target)) dd.classList.remove('open');
+    });
+  });
+</script>

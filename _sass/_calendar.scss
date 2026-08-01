@@ -1,0 +1,128 @@
+/* ---------- calendar ---------- */
+/* --- Reset Table Borders into Card Gaps --- */
+.fc {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th,
+.fc-theme-standard .fc-scrollgrid {
+  border: none !important; /* Hide default grid borders */
+}
+
+.fc .fc-daygrid-body-unbalanced .fc-daygrid-day-events {
+  min-height: 0;
+}
+
+/* Ensure the calendar cell container doesn't overflow or strip margins */
+.fc-daygrid-day {
+  padding: 4px !important; /* Forces physical spacing around EVERY cell */
+}
+
+/* Force all cards (empty and filled) to respect the gap */
+.fc-daygrid-day-frame {
+  background-color: #ededed; /* Gray for empty cards */
+  border-radius: 12px;
+  min-height: 160px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+/* Ensure the day number stays aligned to the top-left corner */
+.fc .fc-daygrid-day-top {
+  flex-direction: row;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+/* Push the event card content down slightly so it doesn't hug the number */
+.fc-daygrid-day-events {
+  margin-top: auto; /* Pushes event contents toward the middle/bottom of filled cards naturally */
+  margin-bottom: auto;
+}
+
+/* Style for days with events (White cards) */
+.fc-daygrid-day:has(.fc-event) .fc-daygrid-day-frame {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb; /* Use standard border instead of box-shadow to prevent size shifts */
+}
+
+/* Day Numbers */
+.fc .fc-daygrid-day-number {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #1f2937;
+  text-decoration: none !important;
+}
+
+/* Days in adjacent months (faded out) */
+.fc-day-other .fc-daygrid-day-frame {
+  opacity: 0.3;
+}
+
+/* --- Style Days WITH Events (White Card) --- */
+.fc-daygrid-day:has(.fc-event) .fc-daygrid-day-frame {
+  background-color: #ffffff;
+  box-shadow: 0 0 0 1px #e5e7eb;
+}
+
+/* --- Optional: Style Home/Away Dark Cards --- */
+/* You can add custom class names via eventClassNames in FullCalendar */
+.fc-daygrid-day.dark-card-day .fc-daygrid-day-frame {
+  background-color: #031c28 !important;
+}
+.fc-daygrid-day.dark-card-day .fc-daygrid-day-number {
+  color: #38bdf8 !important;
+}
+
+/* Override FullCalendar Event Container */
+.fc-h-event, .fc-v-event {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  width: 100%;
+}
+
+/* --- Internal Card Component Styling --- */
+.custom-event-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.logo-circle {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  border: 1px solid #E0E0E0;
+  background-color: rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width:700px){
+  .logo-circle { width: 35px; height: 35px; }
+}
+
+.logo-circle img {
+  height: 60%;
+  object-fit: contain;
+  background: transparent;
+}
+
+.game-time {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #111827;
+  text-transform: uppercase;
+}
+
+.dark-card-day .game-time {
+  color: #ffffff;
+}
