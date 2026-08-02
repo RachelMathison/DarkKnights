@@ -11,13 +11,19 @@ permalink: /stick-and-puck/
 
 <style>
   /* Custom styles for the minimal Stick & Puck look */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
   .legend-item {
     cursor: pointer;
     user-select: none;
     display: inline-flex;
     align-items: center;
-    margin-right: 15px;
     font-weight: 500;
+    font-size: 0.9em;
   }
   .legend-item.disabled {
     opacity: 0.4;
@@ -33,6 +39,7 @@ permalink: /stick-and-puck/
     height: 12px;
     border-radius: 50%;
     margin-right: 5px;
+    flex-shrink: 0;
   }
   .rink-link {
     font-size: 0.85em;
@@ -63,8 +70,8 @@ permalink: /stick-and-puck/
   .fc-daygrid-day .fc-daygrid-day-frame {
     background-color: #ededed;
     border-radius: 12px;
-    min-height: 160px;
-    padding: 8px;
+    min-height: 140px;
+    padding: 4px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -72,7 +79,7 @@ permalink: /stick-and-puck/
     transition: all 0.15s ease;
   }
   .fc-daygrid-event-harness {
-    margin-bottom: 4px !important;
+    margin-bottom: 3px !important;
   }
   .fc-daygrid-event {
     background: transparent !important;
@@ -84,8 +91,10 @@ permalink: /stick-and-puck/
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background: #fff;
     box-sizing: border-box;
+    border-radius: 6px;
+    border-width: 2px;
+    border-style: solid;
   }
   
   /* Loading placeholder state */
@@ -95,10 +104,32 @@ permalink: /stick-and-puck/
     color: #666;
     font-style: italic;
   }
+
+  /* Mobile Adjustments */
+  @media (max-width: 768px) {
+    .fc .fc-toolbar-title {
+      font-size: 1.1em;
+    }
+    .fc-daygrid-day .fc-daygrid-day-frame {
+      min-height: 110px;
+      padding: 2px;
+    }
+    .custom-event-card {
+      padding: 2px 2px !important;
+    }
+    .game-time {
+      font-size: 0.68em !important;
+      line-height: 1.15;
+    }
+    .session-title {
+      font-size: 0.72em !important;
+      line-height: 1.1;
+    }
+  }
 </style>
 
 <!-- Navigation Tabs -->
-<div class="schedule-tabs">
+<div class="schedule-tabs" style="margin-bottom: 15px;">
   <button class="tab-btn active" onclick="switchView('calendar')">Calendar</button>
   <button class="tab-btn" onclick="switchView('list')">List</button>
 </div>
@@ -116,8 +147,12 @@ permalink: /stick-and-puck/
 </div>
 
 <!-- Tab 2: List View -->
-<div id="list-view" class="view-content">
+<div id="list-view" class="view-content" style="display: none;">
   <h2 class="list-section-title">Upcoming Sessions</h2>
+
+  <!-- Shared Legend / Toggles for List View -->
+  <div id="schedule-legend-list" class="legend"></div>
+
   <div id="upcoming-games-container">Loading schedule...</div>
 </div>
 
@@ -178,18 +213,56 @@ function getEventUrl(event) {
   return null;
 }
 
-function renderLegend() {
-  const legendContainer = document.getElementById('schedule-legend');
-  if (!legendContainer) return;
+function formatSessionTitle(title, isMobile) {
+  if (!title) return 'Stick & Puck';
+  const lower = title.toLowerCase();
 
-  legendContainer.innerHTML = calendarsConfig.map(c => `
+  if (isMobile) {
+    if (lower.includes('clinic')) return 'Clinic';
+    if (lower.includes('stick')) return 'S&P';
+  }
+  return title;
+}
+
+// Format time string to force AM/PM onto a new line on mobile if desired
+function formatTimeString(dateObj, isMobile) {
+  if (!dateObj) return '';
+  const timeStr = dateObj.toLocaleTimeString([], {
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+  if (isMobile) {
+    return timeStr.replace(' ', '<br>');
+  }
+  return timeStr;
+}
+
+// Helper to generate a much lighter tint from a hex color for the card background
+function getLightTint(hex) {
+  let c = hex.replace('#', '');
+  if (c.length === 3) c = c.split('').map(x => x + x).join('');
+  const num = parseInt(c, 16);
+  const r = (num >> 16) + Math.round((255 - (num >> 16)) * 0.88);
+  const g = ((num >> 8) & 0x00ff) + Math.round((255 - ((num >> 8) & 0x00ff)) * 0.88);
+  const b = (num & 0x0000ff) + Math.round((255 - (num & 0x0000ff)) * 0.88);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function renderLegend() {
+  const legendHtml = calendarsConfig.map(c => `
     <label class="legend-item ${c.enabled ? '' : 'disabled'}">
       <input type="checkbox" data-rink-id="${c.id}" ${c.enabled ? 'checked' : ''} onchange="toggleRink('${c.id}')">
       <span class="legend-dot" style="background-color: ${c.color};"></span>
       ${c.name}
       <a href="${c.siteUrl}" class="rink-link" target="_blank" onclick="event.stopPropagation()">(Website)</a>
     </label>
-  `).join(' | ');
+  `).join('');
+
+  const legendContainer = document.getElementById('schedule-legend');
+  if (legendContainer) legendContainer.innerHTML = legendHtml;
+
+  const legendListContainer = document.getElementById('schedule-legend-list');
+  if (legendListContainer) legendListContainer.innerHTML = legendHtml;
 }
 
 function toggleRink(rinkId) {
@@ -222,7 +295,6 @@ function toggleRink(rinkId) {
 document.addEventListener('DOMContentLoaded', function() {
   renderLegend();
 
-  // Poll briefly to ensure FullCalendar script has finished defer-loading
   const initInterval = setInterval(() => {
     if (typeof FullCalendar !== 'undefined') {
       clearInterval(initInterval);
@@ -233,11 +305,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initCalendar() {
   const calendarEl = document.getElementById('calendar');
+  const isMobile = window.innerWidth < 768;
 
   calendarInstance = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
     height: 'auto',
-    aspectRatio: 1.35,
+    aspectRatio: isMobile ? 0.9 : 1.35,
     headerToolbar: {
       left: 'title',
       center: '',
@@ -260,13 +333,13 @@ function initCalendar() {
       const sourceId = (arg.event.source && arg.event.source.id) ? arg.event.source.id : null;
       const rinkConfig = getRinkConfig(sourceId);
       const eventColor = rinkConfig ? rinkConfig.color : '#333';
+      const lightBg = getLightTint(eventColor);
+      const isMobile = window.innerWidth < 768;
 
-      const timeStr = arg.event.start ? arg.event.start.toLocaleTimeString([], {
-        hour: 'numeric',
-        minute: '2-digit'
-      }) : '';
+      const timeStr = formatTimeString(arg.event.start, isMobile);
       
-      const title = arg.event.title || 'Stick & Puck';
+      const rawTitle = arg.event.title || 'Stick & Puck';
+      const title = formatSessionTitle(rawTitle, isMobile);
       const eventUrl = getEventUrl(arg.event);
 
       const titleHtml = eventUrl 
@@ -275,9 +348,9 @@ function initCalendar() {
 
       return {
         html: `
-          <div class="custom-event-card" style="padding: 4px 6px; border-left: 6px solid ${eventColor};">
-            <div class="game-time" style="font-size: 0.85em; font-weight: 600;">${timeStr}</div>
-            <div class="session-title" style="font-size: 0.9em; white-space: normal;">${titleHtml}</div>
+          <div class="custom-event-card" style="padding: 2px 3px; border-color: ${eventColor}; background-color: ${lightBg}; text-align: center;">
+            <div class="game-time" style="font-weight: 600; color: #111;">${timeStr}</div>
+            <div class="session-title" style="white-space: normal; color: #111;">${titleHtml}</div>
           </div>
         `
       };
@@ -292,14 +365,22 @@ function initCalendar() {
 
 function switchView(viewName) {
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelectorAll('.view-content').forEach(view => view.classList.remove('active'));
+  document.querySelectorAll('.view-content').forEach(view => {
+    view.classList.remove('active');
+    view.style.display = 'none';
+  });
 
   if (viewName === 'calendar') {
     document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
-    document.getElementById('calendar-view').classList.add('active');
+    const calView = document.getElementById('calendar-view');
+    calView.classList.add('active');
+    calView.style.display = 'block';
+    if (calendarInstance) calendarInstance.updateSize();
   } else {
     document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
-    document.getElementById('list-view').classList.add('active');
+    const listView = document.getElementById('list-view');
+    listView.classList.add('active');
+    listView.style.display = 'block';
   }
 }
 
@@ -343,14 +424,14 @@ function renderListView(events) {
 
   for (const date in grouped) {
     html += `
-      <div class="date-group">
-        <h3 class="date-header">${date}</h3>
-        <table class="schedule-table">
+      <div class="date-group" style="margin-bottom: 20px;">
+        <h3 class="date-header" style="font-size: 1.1em; border-bottom: 2px solid #ddd; padding-bottom: 5px;">${date}</h3>
+        <table class="schedule-table" style="width: 100%; border-collapse: collapse; margin-top: 8px;">
           <thead>
-            <tr>
-              <th style="width: 30%;">Time</th>
-              <th style="width: 35%;">Session</th>
-              <th style="width: 35%;">Location</th>
+            <tr style="text-align: left; background: #f4f4f4;">
+              <th style="padding: 8px; width: 30%;">Time</th>
+              <th style="padding: 8px; width: 35%;">Session</th>
+              <th style="padding: 8px; width: 35%;">Location</th>
             </tr>
           </thead>
           <tbody>
@@ -378,15 +459,17 @@ function renderListView(events) {
       }
 
       const targetUrl = getEventUrl(event);
+      const isMobile = window.innerWidth < 768;
+      const displayTitle = formatSessionTitle(event.title || 'Stick & Puck', isMobile);
 
       html += `
-        <tr>
-          <td style="font-weight: bold;">
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 8px; font-weight: bold;">
             <span class="legend-dot" style="background-color: ${eventColor};"></span>
             ${timeStr}
           </td>
-          <td>${event.title || 'Stick & Puck'}</td>
-          <td>
+          <td style="padding: 8px;">${displayTitle}</td>
+          <td style="padding: 8px;">
             ${location} 
             ${targetUrl ? `<br><a href="${targetUrl}" target="_blank" style="font-size: 0.85em; color: #0066cc;">Register / Info</a>` : ''}
           </td>
