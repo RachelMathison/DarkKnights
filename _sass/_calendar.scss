@@ -88,7 +88,7 @@ $bushtits-text: #0a1f44;
     padding: 8px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     box-sizing: border-box;
     transition: all 0.15s ease;
   }
@@ -183,5 +183,13 @@ $bushtits-text: #0a1f44;
     font-weight: 700;
     color: #111827;
     text-transform: uppercase;
+    text-align: center;
+
+    @media (max-width: 768px) {
+      font-size: 0.65rem !important;
+      line-height: 1.1;
+      width: 100%;
+      white-space: pre-wrap; // Allows the CSS to wrap text at newline characters (\n)
+    }
   }
 }

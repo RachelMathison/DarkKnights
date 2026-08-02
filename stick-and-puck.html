@@ -95,6 +95,7 @@ permalink: /stick-and-puck/
     border-radius: 6px;
     border-width: 2px;
     border-style: solid;
+    overflow: hidden;
   }
   
   /* Loading placeholder state */
@@ -118,12 +119,17 @@ permalink: /stick-and-puck/
       padding: 2px 2px !important;
     }
     .game-time {
-      font-size: 0.68em !important;
-      line-height: 1.15;
+      font-size: 0.65em !important;
+      line-height: 1.1;
+      width: 100%;
+      text-align: center;
+      white-space: pre-wrap;
     }
     .session-title {
-      font-size: 0.72em !important;
+      font-size: 0.7em !important;
       line-height: 1.1;
+      width: 100%;
+      text-align: center;
     }
   }
 </style>
@@ -224,7 +230,6 @@ function formatSessionTitle(title, isMobile) {
   return title;
 }
 
-// Format time string to force AM/PM onto a new line on mobile if desired
 function formatTimeString(dateObj, isMobile) {
   if (!dateObj) return '';
   const timeStr = dateObj.toLocaleTimeString([], {
@@ -232,7 +237,7 @@ function formatTimeString(dateObj, isMobile) {
     minute: '2-digit'
   });
   if (isMobile) {
-    return timeStr.replace(' ', '<br>');
+    return timeStr.replace(' ', '\n');
   }
   return timeStr;
 }
@@ -348,7 +353,7 @@ function initCalendar() {
 
       return {
         html: `
-          <div class="custom-event-card" style="padding: 2px 3px; border-color: ${eventColor}; background-color: ${lightBg}; text-align: center;">
+          <div class="custom-event-card" style="padding: 2px 2px; border-color: ${eventColor}; background-color: ${lightBg}; text-align: center;">
             <div class="game-time" style="font-weight: 600; color: #111;">${timeStr}</div>
             <div class="session-title" style="white-space: normal; color: #111;">${titleHtml}</div>
           </div>
@@ -459,8 +464,8 @@ function renderListView(events) {
       }
 
       const targetUrl = getEventUrl(event);
-      const isMobile = window.innerWidth < 768;
-      const displayTitle = formatSessionTitle(event.title || 'Stick & Puck', isMobile);
+      // Explicitly pass false for isMobile on the list view so it always renders full text
+      const displayTitle = formatSessionTitle(event.title || 'Stick & Puck', false);
 
       html += `
         <tr style="border-bottom: 1px solid #eee;">
