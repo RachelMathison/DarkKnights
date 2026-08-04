@@ -30,22 +30,21 @@
 <script>
 // --- Configuration & Global Helpers ---
 const teamLogos = {
-  red: '/assets/images/site/red.png',
-  crows: '/assets/images/site/crows.png',
-  wild: '/assets/images/site/wild.png',
-  dk: '/assets/images/site/dark-knights-logo.png',
-  bushtits: '/assets/images/site/bushtits-logo.png',
-  honkers: '/assets/images/site/honkers.png',
-  hooters: '/assets/images/site/hooters.png',
-  flamingos: '/assets/images/site/flamingos.png',
-  boobies: '/assets/images/site/boobies.png',
-  pigeons: '/assets/images/site/pigeons.png',
-  shags: '/assets/images/site/shags.png',
-  flying: '/assets/images/site/flying.png',
+  red: '/assets/images/teams/red.png',
+  crows: '/assets/images/teams/crows.png',
+  wild: '/assets/images/teams/wild.png',
+  dk: '/assets/images/teams/dark-knights-logo.png',
+  bushtits: '/assets/images/teams/bushtits.png',
+  honkers: '/assets/images/teams/honkers.png',
+  hooters: '/assets/images/teams/hooters.png',
+  flamingos: '/assets/images/teams/flamingos.png',
+  boobies: '/assets/images/teams/boobies.png',
+  pigeons: '/assets/images/teams/pigeons.png',
+  shags: '/assets/images/teams/shags.png',
+  flying: '/assets/images/teams/flying.png',
   default: '/assets/images/default.png'
 };
 
-// Use the teams defined on the parent page
 const teamsConfig = window.pageTeamsConfig || [];
 const leagueConfigs = {};
 
@@ -93,14 +92,12 @@ function getMatchupDetails(title, leagueKey) {
   };
 }
 
-function getLeagueKey(event) {
-  return (event.source && event.source.id) ? event.source.id : null;
-}
+let globalCalendarInstance = null;
+let masterAllEvents = []; // Holds all parsed events independently
 
 document.addEventListener('DOMContentLoaded', function() {
   const legendContainer = document.getElementById('schedule-legend');
   
-  // Only show the legend if there is more than 1 team
   if (legendContainer) {
     if (teamsConfig.length > 1) {
       legendContainer.innerHTML = teamsConfig.map(t => 
@@ -113,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   const calendarEl = document.getElementById('calendar');
 
-  const calendar = new FullCalendar.Calendar(calendarEl, {
+  globalCalendarInstance = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
     height: 'auto',
     aspectRatio: 1.35,
@@ -130,7 +127,8 @@ document.addEventListener('DOMContentLoaded', function() {
       };
     }),
     eventContent: function(arg) {
-      const matchup = getMatchupDetails(arg.event.title, getLeagueKey(arg.event));
+      const leagueKey = (arg.event.source && arg.event.source.id) ? arg.event.source.id : null;
+      const matchup = getMatchupDetails(arg.event.title, leagueKey);
       const timeStr = arg.event.start ? arg.event.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
 
       return {
@@ -145,17 +143,17 @@ document.addEventListener('DOMContentLoaded', function() {
       };
     },
     eventDidMount: function(info) {
-      const leagueKey = getLeagueKey(info.event);
+      const leagueKey = (info.event.source && info.event.source.id) ? info.event.source.id : null;
       if (info.el.closest('.fc-daygrid-day') && leagueKey) {
         info.el.closest('.fc-daygrid-day').classList.add(`league-${leagueKey}`);
       }
-    },
-    eventsSet: function(events) {
-      renderListView(events);
     }
   });
 
-  calendar.render();
+  globalCalendarInstance.render();
+
+  // Independently fetch and parse all ICS feeds for the list view so it's fully populated
+  fetchAllIcsEventsForList();
 });
 
 function switchView(viewName) {
@@ -168,15 +166,54 @@ function switchView(viewName) {
   } else {
     document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
     document.getElementById('list-view').classList.add('active');
+    renderListView();
   }
 }
 
-function renderListView(events) {
+async function fetchAllIcsEventsForList() {
+  const container = document.getElementById('upcoming-games-container');
+  masterAllEvents = [];
+
+  const promises = Object.keys(leagueConfigs).map(async leagueKey => {
+    const url = leagueConfigs[leagueKey].url;
+    try {
+      const response = await fetch(url);
+      const icsText = await response.text();
+      
+      // Use ical.js (already loaded via CDN) to parse file contents completely
+      const jcalData = ICAL.parse(icsText);
+      const comp = new ICAL.Component(jcalData);
+      const vevents = comp.getAllSubcomponents('vevent');
+
+      vevents.forEach(vevent => {
+        const event = new ICAL.Event(vevent);
+        masterAllEvents.push({
+          title: event.summary,
+          start: event.startDate.toJSDate(),
+          location: event.location || 'TBD',
+          leagueKey: leagueKey
+        });
+      });
+    } catch (err) {
+      console.error(`Error fetching ICS for ${leagueKey}:`, err);
+    }
+  });
+
+  await Promise.all(promises);
+  renderListView();
+}
+
+function renderListView() {
   const container = document.getElementById('upcoming-games-container');
   if (!container) return;
 
+  if (masterAllEvents.length === 0) {
+    container.innerHTML = '<p>Loading schedule or no games found...</p>';
+    return;
+  }
+
   const now = new Date();
-  const upcomingEvents = events.filter(e => e.start && new Date(e.start) > now);
+  const upcomingEvents = masterAllEvents.filter(e => e.start && new Date(e.start) > now);
 
   if (upcomingEvents.length === 0) {
     container.innerHTML = '<p>No upcoming games scheduled.</p>';
@@ -210,8 +247,7 @@ function renderListView(events) {
 
     grouped[date].forEach(event => {
       const timeStr = new Date(event.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
-      const location = (event.extendedProps && event.extendedProps.location) ? event.extendedProps.location : 'TBD';
-      const matchup = getMatchupDetails(event.title, getLeagueKey(event));
+      const matchup = getMatchupDetails(event.title, event.leagueKey);
 
       html += `
         <tr>
@@ -223,7 +259,7 @@ function renderListView(events) {
             </div>
           </td>
           <td>${timeStr}</td>
-          <td>${location}</td>
+          <td>${event.location}</td>
         </tr>
       `;
     });
