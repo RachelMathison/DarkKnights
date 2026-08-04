@@ -97,6 +97,18 @@ permalink: /stick-and-puck/
     border-style: solid;
     overflow: hidden;
   }
+
+  /* --- PAST EVENT STYLING --- */
+  .custom-event-card.past-event {
+    background-color: #f1f1f1 !important;
+    border-color: #d1d1d1 !important;
+    opacity: 0.7;
+  }
+  .custom-event-card.past-event .game-time,
+  .custom-event-card.past-event .session-title,
+  .custom-event-card.past-event .session-title a {
+    color: #888888 !important;
+  }
   
   /* Loading placeholder state */
   .calendar-loading {
@@ -338,7 +350,13 @@ function initCalendar() {
       const sourceId = (arg.event.source && arg.event.source.id) ? arg.event.source.id : null;
       const rinkConfig = getRinkConfig(sourceId);
       const eventColor = rinkConfig ? rinkConfig.color : '#333';
-      const lightBg = getLightTint(eventColor);
+      
+      const now = new Date();
+      const eventEnd = arg.event.end || arg.event.start;
+      const isPast = eventEnd && new Date(eventEnd) < now;
+
+      const lightBg = isPast ? '#f1f1f1' : getLightTint(eventColor);
+      const borderColor = isPast ? '#d1d1d1' : eventColor;
       const isMobile = window.innerWidth < 768;
 
       const timeStr = formatTimeString(arg.event.start, isMobile);
@@ -351,11 +369,13 @@ function initCalendar() {
         ? `<a href="${eventUrl}" target="_blank">${title}</a>`
         : title;
 
+      const cardClasses = isPast ? 'custom-event-card past-event' : 'custom-event-card';
+
       return {
         html: `
-          <div class="custom-event-card" style="padding: 2px 2px; border-color: ${eventColor}; background-color: ${lightBg}; text-align: center;">
-            <div class="game-time" style="font-weight: 600; color: #111;">${timeStr}</div>
-            <div class="session-title" style="white-space: normal; color: #111;">${titleHtml}</div>
+          <div class="${cardClasses}" style="padding: 2px 2px; border-color: ${borderColor}; background-color: ${lightBg}; text-align: center;">
+            <div class="game-time" style="font-weight: 600;">${timeStr}</div>
+            <div class="session-title" style="white-space: normal;">${titleHtml}</div>
           </div>
         `
       };
@@ -464,7 +484,6 @@ function renderListView(events) {
       }
 
       const targetUrl = getEventUrl(event);
-      // Explicitly pass false for isMobile on the list view so it always renders full text
       const displayTitle = formatSessionTitle(event.title || 'Stick & Puck', false);
 
       html += `
