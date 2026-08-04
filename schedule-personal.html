@@ -5,33 +5,19 @@ permalink: /schedule-personal/
 ---
 
 <script>
-// Override the global list with all my personal teams for this page
-window.pageTeamsConfig = [
-  { 
-    id: 'knights', 
-    name: 'Dark Knights', 
-    teamName: 'Dark Knights',
-    url: 'https://knights-schedule-proxy.xarria.workers.dev', 
-    selfLogo: '/assets/images/site/dark-knights-logo.png', 
-    opponents: ['red', 'crows', 'wild'] 
-  },
-  { 
-    id: 'bushtits', 
-    name: 'Bushtits', 
+// Ensure the global list exists, then conditionally add the Bushtits if missing
+window.pageTeamsConfig = window.pageTeamsConfig || [];
+
+if (!window.pageTeamsConfig.some(team => team.id === 'bushtits')) {
+  window.pageTeamsConfig.push({
+    id: 'bushtits',
+    name: 'Bushtits',
     teamName: 'Bushtits',
-    url: 'https://bushtits-schedule-proxy.xarria.workers.dev', 
-    selfLogo: '/assets/images/teams/bushtits.png', 
-    opponents: ['honkers', 'hooters', 'flamingos', 'boobies', 'pigeons', 'shags', 'flying'] 
-  },
-  { 
-    id: 'knights-fall-2026', 
-    name: 'Dark Knights Fall',
-    teamName: 'Dark Knights', 
-    url: 'https://knights-schedule-2.xarria.workers.dev', 
-    selfLogo: '/assets/images/site/dark-knights-logo.png', 
-    opponents: ['red', 'crows', 'wild'] 
-  }
-];
+    url: 'https://bushtits-schedule-proxy.xarria.workers.dev',
+    selfLogo: '/assets/images/teams/bushtits.png',
+    opponents: ['honkers', 'hooters', 'flamingos', 'boobies', 'pigeons', 'shags', 'flying']
+  });
+}
 </script>
 
 {% include schedule-app.html %}
