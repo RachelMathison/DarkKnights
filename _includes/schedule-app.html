@@ -29,22 +29,7 @@
 
 <script>
 // --- Configuration & Global Helpers ---
-const teamLogos = {
-  red: '/assets/images/teams/red.png',
-  crows: '/assets/images/teams/crows.png',
-  wild: '/assets/images/teams/wild.png',
-  dk: '/assets/images/teams/dark-knights-logo.png',
-  bushtits: '/assets/images/teams/bushtits.png',
-  honkers: '/assets/images/teams/honkers.png',
-  hooters: '/assets/images/teams/hooters.png',
-  flamingos: '/assets/images/teams/flamingos.png',
-  boobies: '/assets/images/teams/boobies.png',
-  pigeons: '/assets/images/teams/pigeons.png',
-  shags: '/assets/images/teams/shags.png',
-  flying: '/assets/images/teams/flying.png',
-  default: '/assets/images/default.png'
-};
-
+const teamLogos = window.pageTeamLogos || {};
 const teamsConfig = window.pageTeamsConfig || [];
 const leagueConfigs = {};
 

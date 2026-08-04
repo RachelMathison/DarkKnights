@@ -28,4 +28,18 @@
       if (!dd.contains(e.target)) dd.classList.remove('open');
     });
   });
+  window.pageTeamLogos = {{ site.data.team_logos | jsonify }};
+  window.pageTeamsConfig = [
+    {% for team in site.data.teams %}
+    {
+      id: "{{ team.id }}",
+      name: "{{ team.name }}",
+      teamName: "{{ team.teamName }}",
+      url: "{{ team.url }}",
+      selfLogo: "{{ team.selfLogo }}",
+      opponents: {{ team.opponents | jsonify }}
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ];
+
 </script>

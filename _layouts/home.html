@@ -4,11 +4,28 @@ layout: default
 
 <script src="https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js"></script>
 
+<!-- Pass team configuration and logos from Jekyll to JavaScript -->
+<script>
+  
+  const teamLogos = {{ site.data.team_logos | jsonify }};
+</script>
+
 <div class="home-layout">
   <aside class="game-feed">
-    <h2 class="list-section-title first"><a href="{{ '/schedule/' | relative_url }}">Upcoming Games</a></h2>
-    <div id="upcoming-games-sidebar" class="game-feed-list">
-      <div class="game-feed-empty">Loading schedule...</div>
+    <!-- Mobile View: Next Game -->
+    <div id="next-game-mobile" class="mobile-next-game">
+      <h2 class="list-section-title first"><a href="{{ '/schedule/' | relative_url }}">Next Game</a></h2>
+      <div class="game-feed-list">
+        <div class="game-feed-empty">Loading schedule...</div>
+      </div>
+    </div>
+
+    <!-- Desktop View: Upcoming Games -->
+    <div id="upcoming-games-desktop" class="desktop-upcoming-games">
+      <h2 class="list-section-title first"><a href="{{ '/schedule/' | relative_url }}">Upcoming Games</a></h2>
+      <div id="upcoming-games-sidebar" class="game-feed-list">
+        <div class="game-feed-empty">Loading schedule...</div>
+      </div>
     </div>
   </aside>
 
@@ -57,71 +74,95 @@ layout: default
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const teamLogos = {
-    red: '/assets/images/site/red.png',
-    crows: '/assets/images/site/crows.png',
-    wild: '/assets/images/site/wild.png',
-    default: '/assets/images/default.png'
-  };
+document.addEventListener('DOMContentLoaded', async function() {
+  const teamsConfig = window.pageTeamsConfig || [];
+  const mobileContainer = document.querySelector('#next-game-mobile .game-feed-list');
+  const desktopContainer = document.getElementById('upcoming-games-sidebar');
+  
+  if (!mobileContainer || !desktopContainer) return;
 
-  function getOpponentLogo(title) {
+  if (teamsConfig.length === 0) {
+    const errorMsg = '<div class="game-feed-empty">No calendars configured.</div>';
+    mobileContainer.innerHTML = errorMsg;
+    desktopContainer.innerHTML = errorMsg;
+    return;
+  }
+
+  let allEvents = [];
+
+  const promises = teamsConfig.map(async team => {
+    try {
+      const response = await fetch(team.url);
+      const icsText = await response.text();
+      const jcalData = ICAL.parse(icsText);
+      const comp = new ICAL.Component(jcalData);
+      const vevents = comp.getAllSubcomponents('vevent');
+
+      const oppLogos = {};
+      (team.opponents || []).forEach(opp => {
+        oppLogos[opp] = teamLogos[opp] || teamLogos.default;
+      });
+
+      vevents.forEach(ve => {
+        const event = new ICAL.Event(ve);
+        allEvents.push({
+          title: event.summary,
+          start: event.startDate.toJSDate(),
+          location: event.location,
+          oppLogos: oppLogos
+        });
+      });
+    } catch (err) {
+      console.error(`Error fetching ICS for ${team.name}:`, err);
+    }
+  });
+
+  await Promise.all(promises);
+
+  const now = new Date();
+  const upcomingEvents = allEvents
+    .filter(e => e.start && e.start > now)
+    .sort((a, b) => a.start - b.start);
+
+  if (upcomingEvents.length === 0) {
+    const emptyMsg = '<div class="game-feed-empty">No upcoming games scheduled.</div>';
+    mobileContainer.innerHTML = emptyMsg;
+    desktopContainer.innerHTML = emptyMsg;
+    return;
+  }
+
+  function getOpponentLogo(title, oppLogos) {
     if (!title) return teamLogos.default;
     const lowerTitle = title.toLowerCase();
-    const opponentKeywords = ['red', 'crows', 'wild'];
-    for (const kw of opponentKeywords) {
-      if (lowerTitle.indexOf(kw) !== -1) return teamLogos[kw];
+    for (const kw in oppLogos) {
+      if (lowerTitle.indexOf(kw) !== -1) return oppLogos[kw];
     }
     return teamLogos.default;
   }
 
-  const container = document.getElementById('upcoming-games-sidebar');
-  if (!container) return;
+  function buildGameCardHTML(e) {
+    const dateStr = e.start.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    const timeStr = e.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    const locationStr = e.location ? ` · ${e.location}` : '';
+    const logoUrl = getOpponentLogo(e.title, e.oppLogos);
 
-  fetch('https://knights-schedule-proxy.xarria.workers.dev')
-    .then(res => res.text())
-    .then(icsText => {
-      const jcalData = ICAL.parse(icsText);
-      const comp = new ICAL.Component(jcalData);
-      const vevents = comp.getAllSubcomponents('vevent');
-      const now = new Date();
+    return `
+      <div class="game-card">
+        <div class="game-card-logo">
+          <img src="${logoUrl}" alt="">
+        </div>
+        <div class="game-card-body">
+          <div class="game-card-matchup">${e.title || 'Game'}</div>
+          <div class="game-card-meta">${dateStr} · ${timeStr}${locationStr}</div>
+        </div>
+      </div>
+    `;
+  }
 
-      const events = vevents.map(ve => {
-        const event = new ICAL.Event(ve);
-        return {
-          title: event.summary,
-          start: event.startDate.toJSDate(),
-          location: event.location
-        };
-      })
-      .filter(e => e.start > now)
-      .sort((a, b) => a.start - b.start)
-      .slice(0, 5);
+  // 1. Render only the single next game for mobile
+  mobileContainer.innerHTML = buildGameCardHTML(upcomingEvents[0]);
 
-      if (events.length === 0) {
-        container.innerHTML = '<div class="game-feed-empty">No upcoming games scheduled.</div>';
-        return;
-      }
-
-      container.innerHTML = events.map(e => {
-        const dateStr = e.start.toLocaleDateString([], { month: 'short', day: 'numeric' });
-        const timeStr = e.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-        const locationStr = e.location ? ` · ${e.location}` : '';
-        return `
-          <div class="game-card">
-            <div class="game-card-logo">
-              <img src="${getOpponentLogo(e.title)}" alt="">
-            </div>
-            <div class="game-card-body">
-              <div class="game-card-matchup">${e.title || 'Game'}</div>
-              <div class="game-card-meta">${dateStr} · ${timeStr}${locationStr}</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    })
-    .catch(() => {
-      container.innerHTML = '<div class="game-feed-empty">Unable to load schedule.</div>';
-    });
+  // 2. Render up to 5 upcoming games for desktop
+  desktopContainer.innerHTML = upcomingEvents.slice(0, 5).map(buildGameCardHTML).join('');
 });
 </script>

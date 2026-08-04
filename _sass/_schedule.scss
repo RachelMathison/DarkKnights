@@ -17,50 +17,56 @@
   position: relative;
   border-bottom: 3px solid transparent;
   margin-bottom: -2px;
-}
 
-.tab-btn.active {
-  color: #000;
-  border-bottom-color: #000;
+  &.active {
+    color: #000;
+    border-bottom-color: #000;
+  }
 }
 
 /* --- View Containers --- */
 .view-content {
   display: none;
-}
-.view-content.active {
-  display: block;
+
+  &.active {
+    display: block;
+  }
 }
 
 /* --- List View Styling --- */
 .date-group {
   margin-bottom: 30px;
 }
+
 .date-header {
   font-size: 20px;
   font-weight: 700;
   margin-bottom: 12px;
 }
+
 .schedule-table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
-}
-.schedule-table th,
-.schedule-table td {
-  padding: 12px 16px;
-  text-align: left;
-}
-.schedule-table th {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #555;
-  border-bottom: 1px solid #ddd;
-}
-.schedule-table tr {
-  background-color: #f9f9f9;
-  border-bottom: 1px solid #eee;
+
+  th,
+  td {
+    padding: 12px 16px;
+    text-align: left;
+  }
+
+  th {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #555;
+    border-bottom: 1px solid #ddd;
+  }
+
+  tr {
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #eee;
+  }
 }
 
 /* Matchup Cell layout for List view */
@@ -68,16 +74,16 @@
   display: flex;
   align-items: center;
   gap: 12px;
-}
 
-/* Swaps the order of elements (Logo 1, Text, Logo 2) */
-.matchup-cell.swap-sides {
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-}
+  /* Swaps the order of elements (Logo 1, Text, Logo 2) */
+  &.swap-sides {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
 
-.matchup-cell img {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
+  img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
 }

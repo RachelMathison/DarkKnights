@@ -1,0 +1,20 @@
+# _data/teams.yml
+- id: knights
+  name: "Summer 2026"
+  teamName: "Dark Knights"
+  url: "https://knights-schedule-proxy.xarria.workers.dev"
+  selfLogo: "/assets/images/site/dark-knights-logo.png"
+  opponents:
+    - red
+    - crows
+    - wild
+
+- id: knights-fall-2026
+  name: "Fall 2026"
+  teamName: "Dark Knights"
+  url: "https://knights-schedule-2.xarria.workers.dev"
+  selfLogo: "/assets/images/site/dark-knights-logo.png"
+  opponents:
+    - red
+    - crows
+    - wild
