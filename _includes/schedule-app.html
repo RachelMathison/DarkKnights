@@ -56,6 +56,8 @@ teamsConfig.forEach(team => {
   
   leagueConfigs[team.id] = {
     id: team.id,
+    name: team.name,
+    teamName: team.teamName || '',
     url: team.url,
     selfLogo: team.selfLogo,
     opponentLogos: oppLogos
@@ -79,7 +81,16 @@ function getMatchupDetails(title, leagueKey) {
     }
   }
 
-  const selfIndex = lowerTitle.indexOf(cfg.id);
+  // Dynamically use the teamName declared in the JSON configuration
+  let selfIndex = -1;
+  if (cfg.teamName) {
+    selfIndex = lowerTitle.indexOf(cfg.teamName.toLowerCase());
+  }
+  
+  // Fallback to checking the league ID if teamName isn't matched
+  if (selfIndex === -1 && cfg.id) {
+    selfIndex = lowerTitle.indexOf(cfg.id.toLowerCase());
+  }
 
   if (selfIndex === -1 || oppIndex === -1) {
     return { oppLogo: oppLogo || teamLogos.default, shouldSwap: false, selfLogo: cfg.selfLogo };
@@ -93,7 +104,7 @@ function getMatchupDetails(title, leagueKey) {
 }
 
 let globalCalendarInstance = null;
-let masterAllEvents = []; // Holds all parsed events independently
+let masterAllEvents = [];
 
 document.addEventListener('DOMContentLoaded', function() {
   const legendContainer = document.getElementById('schedule-legend');
@@ -151,8 +162,6 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   globalCalendarInstance.render();
-
-  // Independently fetch and parse all ICS feeds for the list view so it's fully populated
   fetchAllIcsEventsForList();
 });
 
@@ -171,7 +180,6 @@ function switchView(viewName) {
 }
 
 async function fetchAllIcsEventsForList() {
-  const container = document.getElementById('upcoming-games-container');
   masterAllEvents = [];
 
   const promises = Object.keys(leagueConfigs).map(async leagueKey => {
@@ -180,7 +188,6 @@ async function fetchAllIcsEventsForList() {
       const response = await fetch(url);
       const icsText = await response.text();
       
-      // Use ical.js (already loaded via CDN) to parse file contents completely
       const jcalData = ICAL.parse(icsText);
       const comp = new ICAL.Component(jcalData);
       const vevents = comp.getAllSubcomponents('vevent');
