@@ -79,6 +79,15 @@ permalink: /game-stars/
     let activePlayer = null;
     let activeSeason = 'all';
 
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const playerParam = urlParams.get('player');
+
+      if (playerParam) {
+        filterByPlayer(playerParam);
+      }
+    });
+
     function applyFilters() {
       activeSeason = document.getElementById('season-select').value;
       const cards = document.querySelectorAll('.star-game-card');

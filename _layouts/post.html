@@ -49,5 +49,35 @@ layout: default
     <article>
       {{ content }}
     </article>
+
+    {% if page.three_stars %}
+    <div class="three-stars-container post-page-stars">
+      <h2><a href="{{ '/game-stars/' | relative_url }}"{% if page.url == '/game-stars/' %} class="current"{% endif %}>Game Stars</a></h2>
+      <div class="stars-grid">
+        {% assign season_slug = page.season | default: "uncategorized" | slugify %}
+        <div class="star-game-card" data-season="{{ season_slug }}">
+          <div class="star-game-content">
+            <div class="stars-list-wrapper">
+              <ul class="stars-podium">
+                {% for star in page.three_stars %}
+                  {% assign clean_star = star | strip %}
+                  {% assign star_index = forloop.index %}
+                  <li class="star-item">
+                    <span class="star-icon">
+                      {% if star_index == 1 %}⭐{% elsif star_index == 2 %}⭐⭐{% elsif star_index == 3 %}⭐⭐⭐{% endif %}
+                    </span>
+                    <a href="{{ '/game-stars/' | relative_url }}?player={{ clean_star | url_encode }}" class="player-link">
+                      {{ star }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    {% endif %}
   </div>
 </div>
