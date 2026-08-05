@@ -21,13 +21,13 @@ permalink: /standings/
       <thead>
         <tr>
           <th onclick="sortTable('Team')">Team <span class="sort-icon" data-key="Team"></span></th>
+          <th class="highlight-col" onclick="sortTable('PTS')">PTS <span class="sort-icon" data-key="PTS"></span></th>
           <th class="highlight-col" onclick="sortTable('GP')">GP <span class="sort-icon" data-key="GP"></span></th>
           <th onclick="sortTable('W')">W <span class="sort-icon" data-key="W"></span></th>
           <th onclick="sortTable('L')">L <span class="sort-icon" data-key="L"></span></th>
           <th onclick="sortTable('T')">T <span class="sort-icon" data-key="T"></span></th>
           <th onclick="sortTable('OTL')">OTL <span class="sort-icon" data-key="OTL"></span></th>
           <th onclick="sortTable('SOL')">SOL <span class="sort-icon" data-key="SOL"></span></th>
-          <th class="highlight-col" onclick="sortTable('PTS')">PTS <span class="sort-icon" data-key="PTS"></span></th>
           <th onclick="sortTable('GF')">GF <span class="sort-icon" data-key="GF"></span></th>
           <th onclick="sortTable('GA')">GA <span class="sort-icon" data-key="GA"></span></th>
           <th onclick="sortTable('Division')">Division <span class="sort-icon" data-key="Division"></span></th>
@@ -44,7 +44,7 @@ permalink: /standings/
   let standingsData = [];
   // Default to sorting by Points, descending
   let currentSort = { key: 'PTS', ascending: false };
-  const columnKeys = ['Team', 'GP', 'W', 'L', 'T', 'OTL', 'SOL', 'PTS', 'GF', 'GA', 'Division'];
+  const columnKeys = ['Team', 'PTS', 'GP', 'W', 'L', 'T', 'OTL', 'SOL', 'GF', 'GA', 'Division'];
 
   function getLogoUrl(teamName) {
     if (!teamName) return window.pageTeamLogos['default'] || '/assets/images/default.png';
@@ -151,13 +151,13 @@ permalink: /standings/
               <strong>${teamName}</strong>
             </div>
           </td>
-          <td ${activeIndex === 1 ? 'class="active-sort-col highlight-col"' : 'class="highlight-col"'}>${row['GP'] || 0}</td>
-          <td ${activeIndex === 2 ? 'class="active-sort-col"' : ''}>${row['W'] || 0}</td>
-          <td ${activeIndex === 3 ? 'class="active-sort-col"' : ''}>${row['L'] || 0}</td>
-          <td ${activeIndex === 4 ? 'class="active-sort-col"' : ''}>${row['T'] || 0}</td>
-          <td ${activeIndex === 5 ? 'class="active-sort-col"' : ''}>${row['OTL'] || 0}</td>
-          <td ${activeIndex === 6 ? 'class="active-sort-col"' : ''}>${row['SOL'] || 0}</td>
-          <td ${activeIndex === 7 ? 'class="active-sort-col highlight-col"' : 'class="highlight-col"'}><strong>${row['PTS'] || 0}</strong></td>
+          <td ${activeIndex === 1 ? 'class="active-sort-col highlight-col"' : 'class="highlight-col"'}><strong>${row['PTS'] || 0}</strong></td>
+          <td ${activeIndex === 2 ? 'class="active-sort-col highlight-col"' : 'class="highlight-col"'}>${row['GP'] || 0}</td>
+          <td ${activeIndex === 3 ? 'class="active-sort-col"' : ''}>${row['W'] || 0}</td>
+          <td ${activeIndex === 4 ? 'class="active-sort-col"' : ''}>${row['L'] || 0}</td>
+          <td ${activeIndex === 5 ? 'class="active-sort-col"' : ''}>${row['T'] || 0}</td>
+          <td ${activeIndex === 6 ? 'class="active-sort-col"' : ''}>${row['OTL'] || 0}</td>
+          <td ${activeIndex === 7 ? 'class="active-sort-col"' : ''}>${row['SOL'] || 0}</td>
           <td ${activeIndex === 8 ? 'class="active-sort-col"' : ''}>${row['GF'] || 0}</td>
           <td ${activeIndex === 9 ? 'class="active-sort-col"' : ''}>${row['GA'] || 0}</td>
           <td ${activeIndex === 10 ? 'class="active-sort-col"' : ''}>${row['Division'] || ''}</td>
