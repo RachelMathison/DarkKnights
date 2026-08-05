@@ -6,7 +6,6 @@ layout: default
 
 <!-- Pass team configuration and logos from Jekyll to JavaScript -->
 <script>
-  
   const teamLogos = {{ site.data.team_logos | jsonify }};
 </script>
 
@@ -25,6 +24,24 @@ layout: default
       <h2 class="list-section-title first"><a href="{{ '/schedule/' | relative_url }}">Upcoming Games</a></h2>
       <div id="upcoming-games-sidebar" class="game-feed-list">
         <div class="game-feed-empty">Loading schedule...</div>
+      </div>
+    </div>
+
+    <!-- Mini Standings Widget (Desktop Only) -->
+    <div id="mini-standings-widget" class="desktop-standings">
+      <h2><a href="{{ '/standings/' | relative_url }}">Standings</a></h2>
+      <div class="game-feed-list">
+        <table>
+          <thead>
+            <tr>
+              <th>Team</th>
+              <th>PTS</th>
+            </tr>
+          </thead>
+          <tbody id="mini-standings-tbody">
+            <tr><td colspan="2" style="text-align: center; padding-top: 16px; color: var(--gray-500);">Loading...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </aside>
@@ -50,7 +67,7 @@ layout: default
               {% endif %}
             {% endfor %}
           </div>
-          <h2 class="article-card-title">{{ post.title }}</h2>
+          <h3 class="article-card-title">{{ post.title }}</h3>
           <p class="article-card-dek">{{ post.dek }}</p>
           <div class="article-card-footer">
             <div class="article-card-date">{{ post.date | date: "%B %-d, %Y" }}</div>
@@ -75,94 +92,125 @@ layout: default
 
 <script>
 document.addEventListener('DOMContentLoaded', async function() {
+  // --- 1. SCHEDULE LOGIC ---
   const teamsConfig = window.pageTeamsConfig || [];
   const mobileContainer = document.querySelector('#next-game-mobile .game-feed-list');
   const desktopContainer = document.getElementById('upcoming-games-sidebar');
   
-  if (!mobileContainer || !desktopContainer) return;
-
   if (teamsConfig.length === 0) {
     const errorMsg = '<div class="game-feed-empty">No calendars configured.</div>';
-    mobileContainer.innerHTML = errorMsg;
-    desktopContainer.innerHTML = errorMsg;
-    return;
-  }
+    if (mobileContainer) mobileContainer.innerHTML = errorMsg;
+    if (desktopContainer) desktopContainer.innerHTML = errorMsg;
+  } else {
+    let allEvents = [];
 
-  let allEvents = [];
+    const promises = teamsConfig.map(async team => {
+      try {
+        const response = await fetch(team.url);
+        const icsText = await response.text();
+        const jcalData = ICAL.parse(icsText);
+        const comp = new ICAL.Component(jcalData);
+        const vevents = comp.getAllSubcomponents('vevent');
 
-  const promises = teamsConfig.map(async team => {
-    try {
-      const response = await fetch(team.url);
-      const icsText = await response.text();
-      const jcalData = ICAL.parse(icsText);
-      const comp = new ICAL.Component(jcalData);
-      const vevents = comp.getAllSubcomponents('vevent');
-
-      const oppLogos = {};
-      (team.opponents || []).forEach(opp => {
-        oppLogos[opp] = teamLogos[opp] || teamLogos.default;
-      });
-
-      vevents.forEach(ve => {
-        const event = new ICAL.Event(ve);
-        allEvents.push({
-          title: event.summary,
-          start: event.startDate.toJSDate(),
-          location: event.location,
-          oppLogos: oppLogos
+        const oppLogos = {};
+        (team.opponents || []).forEach(opp => {
+          oppLogos[opp] = teamLogos[opp] || teamLogos.default;
         });
+
+        vevents.forEach(ve => {
+          const event = new ICAL.Event(ve);
+          allEvents.push({
+            title: event.summary,
+            start: event.startDate.toJSDate(),
+            location: event.location,
+            oppLogos: oppLogos
+          });
+        });
+      } catch (err) {
+        console.error(`Error fetching ICS for ${team.name}:`, err);
+      }
+    });
+
+    await Promise.all(promises);
+
+    const now = new Date();
+    const upcomingEvents = allEvents
+      .filter(e => e.start && e.start > now)
+      .sort((a, b) => a.start - b.start);
+
+    if (upcomingEvents.length === 0) {
+      const emptyMsg = '<div class="game-feed-empty">No upcoming games scheduled.</div>';
+      if (mobileContainer) mobileContainer.innerHTML = emptyMsg;
+      if (desktopContainer) desktopContainer.innerHTML = emptyMsg;
+    } else {
+      function getOpponentLogo(title, oppLogos) {
+        if (!title) return teamLogos.default;
+        const lowerTitle = title.toLowerCase();
+        for (const kw in oppLogos) {
+          if (lowerTitle.indexOf(kw) !== -1) return oppLogos[kw];
+        }
+        return teamLogos.default;
+      }
+
+      function buildGameCardHTML(e) {
+        const dateStr = e.start.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        const timeStr = e.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        const locationStr = e.location ? ` · ${e.location}` : '';
+        const logoUrl = getOpponentLogo(e.title, e.oppLogos);
+
+        return `
+          <div class="game-card">
+            <div class="game-card-logo">
+              <img src="${logoUrl}" alt="">
+            </div>
+            <div class="game-card-body">
+              <div class="game-card-matchup">${e.title || 'Game'}</div>
+              <div class="game-card-meta">${dateStr} · ${timeStr}${locationStr}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (mobileContainer) mobileContainer.innerHTML = buildGameCardHTML(upcomingEvents[0]);
+      if (desktopContainer) desktopContainer.innerHTML = upcomingEvents.slice(0, 5).map(buildGameCardHTML).join('');
+    }
+  }
+
+  // --- 2. MINI STANDINGS LOGIC ---
+  async function loadMiniStandings() {
+    const tbody = document.getElementById('mini-standings-tbody');
+    if (!tbody) return;
+
+    try {
+      const res = await fetch('https://knights-standings.xarria.workers.dev/');
+      const data = await res.json();
+      
+      // Sort by PTS descending
+      data.sort((a, b) => {
+        const ptsA = Number(a['PTS'] || 0);
+        const ptsB = Number(b['PTS'] || 0);
+        return ptsB - ptsA;
       });
-    } catch (err) {
-      console.error(`Error fetching ICS for ${team.name}:`, err);
+
+      tbody.innerHTML = data.map(row => {
+        const teamName = row['Team'] || 'Unknown';
+        const pts = row['PTS'] || 0;
+        
+        return `
+          <tr>
+            <td style="padding: 10px 0; border-bottom: 1px solid var(--gray-200, #eee);"><strong>${teamName}</strong></td>
+            <td style="padding: 10px 0; border-bottom: 1px solid var(--gray-200, #eee); text-align: center; font-weight: bold; color: var(--accent-color, #111);">${pts}</td>
+          </tr>
+        `;
+      }).join('');
+
+    } catch (e) {
+      console.error('Error fetching mini standings:', e);
+      tbody.innerHTML = `<tr><td colspan="2" style="text-align: center; padding-top: 16px; color: red;">Failed to load.</td></tr>`;
     }
-  });
-
-  await Promise.all(promises);
-
-  const now = new Date();
-  const upcomingEvents = allEvents
-    .filter(e => e.start && e.start > now)
-    .sort((a, b) => a.start - b.start);
-
-  if (upcomingEvents.length === 0) {
-    const emptyMsg = '<div class="game-feed-empty">No upcoming games scheduled.</div>';
-    mobileContainer.innerHTML = emptyMsg;
-    desktopContainer.innerHTML = emptyMsg;
-    return;
   }
 
-  function getOpponentLogo(title, oppLogos) {
-    if (!title) return teamLogos.default;
-    const lowerTitle = title.toLowerCase();
-    for (const kw in oppLogos) {
-      if (lowerTitle.indexOf(kw) !== -1) return oppLogos[kw];
-    }
-    return teamLogos.default;
-  }
-
-  function buildGameCardHTML(e) {
-    const dateStr = e.start.toLocaleDateString([], { month: 'short', day: 'numeric' });
-    const timeStr = e.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-    const locationStr = e.location ? ` · ${e.location}` : '';
-    const logoUrl = getOpponentLogo(e.title, e.oppLogos);
-
-    return `
-      <div class="game-card">
-        <div class="game-card-logo">
-          <img src="${logoUrl}" alt="">
-        </div>
-        <div class="game-card-body">
-          <div class="game-card-matchup">${e.title || 'Game'}</div>
-          <div class="game-card-meta">${dateStr} · ${timeStr}${locationStr}</div>
-        </div>
-      </div>
-    `;
-  }
-
-  // 1. Render only the single next game for mobile
-  mobileContainer.innerHTML = buildGameCardHTML(upcomingEvents[0]);
-
-  // 2. Render up to 5 upcoming games for desktop
-  desktopContainer.innerHTML = upcomingEvents.slice(0, 5).map(buildGameCardHTML).join('');
+  // Execute the standings fetch independently
+  loadMiniStandings();
 });
 </script>

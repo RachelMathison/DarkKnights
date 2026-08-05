@@ -133,3 +133,47 @@
     display: block;
   }
 }
+
+.desktop-standings {
+  margin-top: 1rem;
+
+  @media (max-width: 900px) {
+    display: none !important;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+
+    th {
+      text-align: left;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--gray-300);
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      color: var(--gray-600);
+      letter-spacing: 0.05em;
+
+      &:last-child {
+        text-align: center;
+      }
+    }
+
+    td {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-200);
+      color: var(--black);
+
+      &:last-child {
+        text-align: center;
+        font-weight: bold;
+        color: var(--accent-color, var(--black));
+      }
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+  }
+}
