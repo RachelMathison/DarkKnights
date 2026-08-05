@@ -63,7 +63,7 @@ layout: default
                   {% assign clean_star = star | strip %}
                   {% assign star_index = forloop.index %}
                   <li class="star-item">
-                    <span class="star-icon">
+                    <span class="star-icon" {% if star_index == 3 %}style="position: relative; right: 5px;"{% endif %}>
                       {% if star_index == 1 %}⭐{% elsif star_index == 2 %}⭐⭐{% elsif star_index == 3 %}⭐⭐⭐{% endif %}
                     </span>
                     <a href="{{ '/game-stars/' | relative_url }}?player={{ clean_star | url_encode }}" class="player-link">
