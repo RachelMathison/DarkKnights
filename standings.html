@@ -68,7 +68,7 @@ permalink: /standings/
     const tbody = document.getElementById('standings-tbody');
     
     try {
-      const response = await fetch('https://knights-standings.xarria.workers.dev/');
+      const response = await fetch('https://standings.darkknightshockey.com');
       standingsData = await response.json();
       
       executeSort();
