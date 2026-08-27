@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% if page.image %}
+  <meta property="og:image" content="{{ page.header_image | absolute_url }}" />
+{% endif %}
 <title>{% if page.title %}{{ page.title }} &middot; {% endif %}Dark Knights Insider</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
