@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Dark Knights Welcome Back Familiar Faces for Fall"
-dek: "A look at who's in and who's out as the Dark Knights prepare for Fall 2026."
+description: "A look at who's in and who's out as the Dark Knights prepare for Fall 2026."
 tags: ["Fall 2026", "Preseason"]
 header_image: "assets/images/site/season-preview.png"
 header_image_alt: "Season Preview"
