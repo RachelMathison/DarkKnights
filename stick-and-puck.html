@@ -474,8 +474,7 @@ function renderListView(events) {
       const startDate = new Date(event.start);
       const timeStr = startDate.toLocaleTimeString([], {
         hour: 'numeric',
-        minute: '2-digit',
-        timeZoneName: 'short'
+        minute: '2-digit'
       });
 
       const sourceId = (event.source && event.source.id) ? event.source.id : null;
