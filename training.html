@@ -1,7 +1,7 @@
 ---
 layout: default
-title: Stick and Puck Schedule
-permalink: /stick-and-puck/
+title: Training Schedule
+permalink: /Training/
 ---
 
 <!-- 1. FullCalendar & iCal Dependencies (Loaded with defer for non-blocking render) -->
@@ -40,8 +40,8 @@ permalink: /stick-and-puck/
 </div>
 
 <script>
-// --- CONFIGURATION LOADED FROM _data/stick_and_puck_calendars.yml ---
-const calendarsConfig = {{ site.data.stick_and_puck_calendars | jsonify }};
+// --- CONFIGURATION LOADED FROM _data/training_calendar.yml ---
+const calendarsConfig = {{ site.data.training_calendar | jsonify }};
 
 let calendarInstance = null;
 

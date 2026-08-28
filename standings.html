@@ -41,34 +41,43 @@ permalink: /standings/
 </div>
 
 <script>
+  // Site Configuration Injected via Jekyll Data File (_data/team_config.yml)
+  const STANDINGS_API_URL = "{{ site.data.team_config.standings_api_url }}";
+  const PRIMARY_TEAM_KEY = "{{ site.data.team_config.primary_team_key | default: 'default' }}";
+  const DEFAULT_LOGO_PATH = "{{ site.data.team_config.default_logo_path | default: '/assets/images/default.png' }}";
+  const PRIMARY_TEAM_KEYWORDS = {{ site.data.team_config.primary_team_keywords | jsonify | default: "[]" }};
+
   let standingsData = [];
-  // Default to sorting by Points, descending
   let currentSort = { key: 'PTS', ascending: false };
   const columnKeys = ['Team', 'PTS', 'GP', 'W', 'L', 'T', 'OTL', 'SOL', 'GF', 'GA', 'Division'];
 
   function getLogoUrl(teamName) {
-    if (!teamName) return window.pageTeamLogos['default'] || '/assets/images/default.png';
+    const fallbackLogo = window.pageTeamLogos['default'] || DEFAULT_LOGO_PATH;
+    if (!teamName) return fallbackLogo;
+    
     const lower = teamName.toLowerCase();
     
-    // Check direct or partial match against keys in window.pageTeamLogos
+    // 1. Check direct or partial match against keys in site.data.team_logos
     for (const [key, path] of Object.entries(window.pageTeamLogos)) {
-      if (lower.includes(key)) {
+      if (lower.includes(key.toLowerCase())) {
         return path;
       }
     }
-    // Hardcode fallback mapping just in case the name matches your Dark Knights profile
-    if (lower.includes('dark') || lower.includes('knights')) {
-      return window.pageTeamLogos['dk'];
+    
+    // 2. Dynamic check for primary team keywords defined in _config.yml
+    const matchesPrimaryTeam = PRIMARY_TEAM_KEYWORDS.some(keyword => lower.includes(keyword.toLowerCase()));
+    if (matchesPrimaryTeam && window.pageTeamLogos[PRIMARY_TEAM_KEY]) {
+      return window.pageTeamLogos[PRIMARY_TEAM_KEY];
     }
     
-    return window.pageTeamLogos['default'] || '/assets/images/default.png';
+    return fallbackLogo;
   }
 
   async function fetchStandings() {
     const tbody = document.getElementById('standings-tbody');
     
     try {
-      const response = await fetch('https://standings.darkknightshockey.com');
+      const response = await fetch(STANDINGS_API_URL);
       standingsData = await response.json();
       
       executeSort();
@@ -80,10 +89,8 @@ permalink: /standings/
 
   function sortTable(key) {
     if (currentSort.key === key) {
-      // Toggle direction
       currentSort.ascending = !currentSort.ascending;
     } else {
-      // New column: text defaults ascending, numbers default descending
       currentSort.key = key;
       currentSort.ascending = (key === 'Team' || key === 'Division');
     }
@@ -98,7 +105,6 @@ permalink: /standings/
       let valA = a[key] !== undefined ? a[key] : '';
       let valB = b[key] !== undefined ? b[key] : '';
 
-      // Check if it's a numeric string and parse it for correct sorting
       if (!isNaN(valA) && !isNaN(valB) && valA !== '' && valB !== '') {
         valA = Number(valA);
         valB = Number(valB);
@@ -118,7 +124,6 @@ permalink: /standings/
   function updateUI() {
     const activeIndex = columnKeys.indexOf(currentSort.key);
 
-    // Update table headers with sorting arrows
     document.querySelectorAll('#standings-table th').forEach((th, index) => {
       const icon = th.querySelector('.sort-icon');
       if (icon) {
@@ -138,7 +143,6 @@ permalink: /standings/
       return;
     }
 
-    // Build the rows
     tbody.innerHTML = standingsData.map(row => {
       const teamName = row['Team'] || '';
       const logoUrl = getLogoUrl(teamName);
@@ -166,6 +170,5 @@ permalink: /standings/
     }).join('');
   }
 
-  // Initial load
   fetchStandings();
 </script>

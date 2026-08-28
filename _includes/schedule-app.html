@@ -15,10 +15,8 @@
 
 <!-- Tab 1: Calendar View -->
 <div id="calendar-view" class="view-content active">
-
   <!-- Dynamic Legend -->
   <div id="schedule-legend" class="legend"></div>
-
   <div id="calendar"></div>
 </div>
 
@@ -34,58 +32,61 @@ const teamLogos = window.pageTeamLogos || {};
 const teamsConfig = window.pageTeamsConfig || [];
 const leagueConfigs = {};
 
+// Register league configurations
 teamsConfig.forEach(team => {
-  const oppLogos = {};
-  team.opponents.forEach(opp => {
-    oppLogos[opp] = teamLogos[opp] || teamLogos.default;
-  });
-  
   leagueConfigs[team.id] = {
     id: team.id,
     name: team.name,
     teamName: team.teamName || '',
     url: team.url,
-    selfLogo: team.selfLogo,
-    opponentLogos: oppLogos
+    selfLogo: team.selfLogo
   };
 });
 
 function getMatchupDetails(title, leagueKey) {
   const cfg = leagueConfigs[leagueKey];
-  if (!title || !cfg) return { oppLogo: teamLogos.default, shouldSwap: false, selfLogo: teamLogos.default };
+  const defaultResult = { 
+    oppLogo: teamLogos.default || '', 
+    shouldSwap: false, 
+    selfLogo: cfg?.selfLogo || teamLogos.default || '' 
+  };
+
+  if (!title || !cfg) return defaultResult;
 
   const lowerTitle = title.toLowerCase();
-  let oppIndex = -1;
-  let oppLogo = null;
 
-  for (const kw in cfg.opponentLogos) {
-    const idx = lowerTitle.indexOf(kw);
-    if (idx !== -1) {
-      oppIndex = idx;
-      oppLogo = cfg.opponentLogos[kw];
-      break;
-    }
-  }
-
-  // Dynamically use the teamName declared in the JSON configuration
+  // Find own team position in the title string
   let selfIndex = -1;
   if (cfg.teamName) {
     selfIndex = lowerTitle.indexOf(cfg.teamName.toLowerCase());
   }
-  
-  // Fallback to checking the league ID if teamName isn't matched
   if (selfIndex === -1 && cfg.id) {
     selfIndex = lowerTitle.indexOf(cfg.id.toLowerCase());
   }
 
-  if (selfIndex === -1 || oppIndex === -1) {
-    return { oppLogo: oppLogo || teamLogos.default, shouldSwap: false, selfLogo: cfg.selfLogo };
+  // Dynamically match opponent logo by scanning available keys in teamLogos
+  let oppIndex = -1;
+  let oppLogo = null;
+
+  // Sort logo keys by length descending to match longer, more specific team names first
+  const logoKeys = Object.keys(teamLogos)
+    .filter(k => k !== 'default')
+    .sort((a, b) => b.length - a.length);
+
+  for (const key of logoKeys) {
+    const idx = lowerTitle.indexOf(key.toLowerCase());
+    // Ensure the key matched is not our own team's name
+    if (idx !== -1 && idx !== selfIndex) {
+      oppIndex = idx;
+      oppLogo = teamLogos[key];
+      break;
+    }
   }
 
   return {
-    oppLogo: oppLogo || teamLogos.default,
-    shouldSwap: selfIndex < oppIndex,
-    selfLogo: cfg.selfLogo
+    oppLogo: oppLogo || teamLogos.default || '',
+    shouldSwap: selfIndex !== -1 && oppIndex !== -1 ? selfIndex < oppIndex : false,
+    selfLogo: cfg.selfLogo || teamLogos.default || ''
   };
 }
 

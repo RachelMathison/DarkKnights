@@ -57,35 +57,36 @@ permalink: /stats/
 </div>
 
 <script>
+  // Configuration Loaded from _data/team_config.yml
+  const STATS_API_URL = "{{ site.data.team_config.stats_api_url }}";
+
   let skaterStats = [];
   let goalieStats = [];
-  // Explicitly set default to points descending (highest first)
   let currentSort = { key: 'pts', ascending: false };
 
   const columnKeys = ['number', 'name', 'gp', 'g', 'a', 'pts', 'avgPts', 'pim', 'ppg', 'gw'];
 
   async function fetchStats() {
     try {
-      const response = await fetch('https://stats.darkknightshockey.com');
+      const response = await fetch(STATS_API_URL);
       const data = await response.json();
       
       skaterStats = data.skaters;
       goalieStats = data.goalies;
       
-      // Run initial sort using the default object directly
       executeSort();
       renderGoalies();
     } catch (error) {
       console.error('Error fetching stats:', error);
+      document.getElementById('skaters-tbody').innerHTML = `<tr><td colspan="10" style="text-align: center; color: red;">Failed to load skater statistics.</td></tr>`;
+      document.getElementById('goalies-tbody').innerHTML = `<tr><td colspan="12" style="text-align: center; color: red;">Failed to load goalie statistics.</td></tr>`;
     }
   }
 
   function sortTable(key) {
     if (currentSort.key === key) {
-      // Toggle direction if clicking the same column header
       currentSort.ascending = !currentSort.ascending;
     } else {
-      // New column selected: text/numbers start ascending, stats start descending
       currentSort.key = key;
       currentSort.ascending = (key === 'name' || key === 'number');
     }
