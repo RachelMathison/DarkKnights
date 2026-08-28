@@ -112,18 +112,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         const comp = new ICAL.Component(jcalData);
         const vevents = comp.getAllSubcomponents('vevent');
 
-        const oppLogos = {};
-        (team.opponents || []).forEach(opp => {
-          oppLogos[opp] = teamLogos[opp] || teamLogos.default;
-        });
-
         vevents.forEach(ve => {
           const event = new ICAL.Event(ve);
           allEvents.push({
             title: event.summary,
             start: event.startDate.toJSDate(),
             location: event.location,
-            oppLogos: oppLogos
+            teamName: team.teamName || '',
+            teamId: team.id || ''
           });
         });
       } catch (err) {
@@ -143,20 +139,33 @@ document.addEventListener('DOMContentLoaded', async function() {
       if (mobileContainer) mobileContainer.innerHTML = emptyMsg;
       if (desktopContainer) desktopContainer.innerHTML = emptyMsg;
     } else {
-      function getOpponentLogo(title, oppLogos) {
-        if (!title) return teamLogos.default;
+      function getOpponentLogo(title, teamName, teamId) {
+        if (!title) return teamLogos.default || '';
         const lowerTitle = title.toLowerCase();
-        for (const kw in oppLogos) {
-          if (lowerTitle.indexOf(kw) !== -1) return oppLogos[kw];
+
+        // Identify self-team string position to avoid matching own logo
+        const selfName = (teamName || teamId || '').toLowerCase();
+
+        // Sort keys by length descending to match specific team names first
+        const logoKeys = Object.keys(teamLogos)
+          .filter(k => k !== 'default')
+          .sort((a, b) => b.length - a.length);
+
+        for (const key of logoKeys) {
+          const lowerKey = key.toLowerCase();
+          // Match if key appears in title and isn't our own team name
+          if (lowerTitle.includes(lowerKey) && lowerKey !== selfName) {
+            return teamLogos[key];
+          }
         }
-        return teamLogos.default;
+        return teamLogos.default || '';
       }
 
       function buildGameCardHTML(e) {
         const dateStr = e.start.toLocaleDateString([], { month: 'short', day: 'numeric' });
         const timeStr = e.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
         const locationStr = e.location ? ` · ${e.location}` : '';
-        const logoUrl = getOpponentLogo(e.title, e.oppLogos);
+        const logoUrl = getOpponentLogo(e.title, e.teamName, e.teamId);
 
         return `
           <div class="game-card">
