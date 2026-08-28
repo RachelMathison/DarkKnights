@@ -109,6 +109,18 @@ $breakpoint-mobile: 768px;
       justify-content: flex-start;
     }
 
+    /* Past day that has events: keep muted grey background */
+    &.fc-day-past:has(.fc-event) .fc-daygrid-day-frame {
+      background-color: $color-past-bg !important;
+      border: 1px solid $color-past-border !important;
+    }
+
+    /* Today/future days that have events: white with grey border */
+    &:not(.fc-day-past):has(.fc-event) .fc-daygrid-day-frame {
+      background-color: #ffffff !important;
+      border: 1px solid $color-past-border !important;
+    }
+
     .fc-daygrid-day-frame {
       background-color: $color-bg-light;
       border-radius: 12px;
