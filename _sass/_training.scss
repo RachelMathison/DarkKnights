@@ -54,10 +54,16 @@ $breakpoint-mobile: 768px;
 
   .session-title {
     font-weight: bold;
+    width: 100%;
+    padding: 0 .5em;
 
     a {
       color: inherit;
       text-decoration: none;
+      display: inline-block;
+      max-width: 100%;
+      white-space: nowrap;
+      vertical-align: bottom;
 
       &:hover {
         text-decoration: underline;

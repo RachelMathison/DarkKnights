@@ -171,6 +171,12 @@ function initCalendar() {
       center: '',
       right: 'prev,next today'
     },
+    eventDataTransform: function(eventData) {
+      if (!isRelevantEvent(eventData.title)) {
+        return false; // Tells FullCalendar not to render this event at all
+      }
+      return eventData;
+    },
     eventSources: calendarsConfig.filter(c => c.enabled).map(function(cfg) {
       return {
         id: cfg.id,
