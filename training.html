@@ -42,6 +42,10 @@ permalink: /training/
 <script>
 // --- CONFIGURATION LOADED FROM _data/training_calendar.yml ---
 const calendarsConfig = {{ site.data.training_calendar | jsonify }};
+calendarsConfig.forEach(calendar => {
+  calendar.color = getComputedStyle(document.documentElement)
+    .getPropertyValue(`--rink-${calendar.id}`).trim();
+});
 
 let calendarInstance = null;
 

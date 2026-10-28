@@ -69,6 +69,24 @@
   }
 }
 
+.league-matchup-table {
+  thead tr {
+    background-color: #fff;
+  }
+
+  thead th:first-child {
+    text-align: center;
+  }
+
+  tbody tr {
+    background-color: #fff;
+
+    &:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+  }
+}
+
 /* Matchup Cell layout for List view */
 .matchup-cell {
   display: flex;
@@ -85,5 +103,57 @@
     width: 28px;
     height: 28px;
     object-fit: contain;
+  }
+}
+
+/* League schedule matchup rows: names outside, logos and @ centered. */
+.league-matchup-table .matchup-cell {
+  display: grid;
+  grid-template-columns: minmax(70px, 1fr) 36px 24px 36px minmax(70px, 1fr);
+  align-items: center;
+  justify-items: center;
+  gap: 10px;
+
+  .team-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &:first-child {
+      justify-self: end;
+      text-align: right;
+    }
+
+    &:last-child {
+      justify-self: start;
+      text-align: left;
+    }
+  }
+
+  img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .matchup-at {
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 600px) {
+  .league-matchup-table .matchup-cell {
+    grid-template-columns: minmax(0, 1fr) 28px 18px 28px minmax(0, 1fr);
+    gap: 5px;
+
+    .team-name {
+      font-size: 0.8rem;
+      white-space: normal;
+    }
+
+    img {
+      width: 28px;
+      height: 28px;
+    }
   }
 }

@@ -109,7 +109,8 @@ permalink: /league-schedule/
     width: 65px;
     height: 65px;
     border-radius: 50%;
-    background-color: #f0f0f0;
+    background-color: color-mix(in srgb, var(--rink-color, var(--training-bg-light)) 12%, white);
+    border: 1px solid var(--rink-color, var(--gray-300));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -141,13 +142,13 @@ permalink: /league-schedule/
   }
 
   .custom-event-card.multi-game-card .logo-circle {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
   }
 
   .custom-event-card.multi-game-card .logo-circle img {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
   }
 
   .custom-event-card.multi-game-card .at-symbol {
@@ -303,6 +304,26 @@ function getMatchupDetails(title) {
   };
 }
 
+// In the single-game calendar card, show the opponent when only one side of
+// the matchup is selected. This keeps the icon useful when filtering to one team.
+function getSingleTeamCalendarLogo(matchup) {
+  const team1Selected = matchup.team1Name && activeTeams.has(matchup.team1Name);
+  const team2Selected = matchup.team2Name && activeTeams.has(matchup.team2Name);
+
+  if (team1Selected && !team2Selected) return matchup.oppLogo;
+  if (team2Selected && !team1Selected) return matchup.selfLogo;
+  return matchup.selfLogo;
+}
+
+function getRinkColor(location) {
+  const value = String(location || '').toLowerCase();
+  if (value.includes('sherwood')) return 'var(--rink-sherwood)';
+  if (value.includes('mountain view')) return 'var(--rink-mv)';
+  if (value.includes('veterans') || value.includes('coliseum')) return 'var(--rink-vmc)';
+  if (value.includes('winterhawks') || value.includes('beaverton')) return 'var(--rink-wsc)';
+  return 'var(--training-bg-light)';
+}
+
 // Check if an event is active based on current selection
 function isEventActive(leagueKey, title) {
   if (!activeLeagues.has(leagueKey)) return false;
@@ -347,9 +368,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return {
           html: `
             <div class="custom-event-card multi-game-card">
-              <span class="logo-circle"><img src="${matchup.selfLogo}" alt="" /></span>
+              <span class="logo-circle" style="--rink-color: ${getRinkColor(arg.event.extendedProps.location)}"><img src="${matchup.selfLogo}" alt="" /></span>
               <span class="at-symbol">@</span>
-              <span class="logo-circle"><img src="${matchup.oppLogo}" alt="" /></span>
+              <span class="logo-circle" style="--rink-color: ${getRinkColor(arg.event.extendedProps.location)}"><img src="${matchup.oppLogo}" alt="" /></span>
               <div class="game-time">${timeStr}</div>
             </div>
           `
@@ -359,8 +380,8 @@ document.addEventListener('DOMContentLoaded', function() {
       return {
         html: `
           <div class="custom-event-card">
-            <div class="logo-circle">
-              <img src="${matchup.selfLogo}" alt="${arg.event.title}" />
+            <div class="logo-circle" style="--rink-color: ${getRinkColor(arg.event.extendedProps.location)}">
+              <img src="${getSingleTeamCalendarLogo(matchup)}" alt="${arg.event.title}" />
             </div>
             <div class="game-time">${timeStr}</div>
           </div>
@@ -528,12 +549,13 @@ function renderListView() {
     html += `
       <div class="date-group">
         <h3 class="date-header">${date}</h3>
-        <table class="schedule-table">
+        <table class="schedule-table league-matchup-table">
           <thead>
             <tr>
-              <th style="width: 50%;">Matchup</th>
-              <th style="width: 25%;">Time</th>
-              <th style="width: 25%;">Location</th>
+              <th style="width: 42%;">Matchup</th>
+              <th style="width: 20%;">Division</th>
+              <th style="width: 18%;">Time</th>
+              <th style="width: 20%;">Location</th>
             </tr>
           </thead>
           <tbody>
@@ -547,11 +569,14 @@ function renderListView() {
         <tr>
           <td>
             <div class="matchup-cell">
-              <img src="${matchup.selfLogo}" alt="Team 1" />
-              <span>${event.title || 'Game'}</span>
-              <img src="${matchup.oppLogo}" alt="Team 2" />
+              <span class="team-name">${matchup.team1Name || 'Team 1'}</span>
+              <img src="${matchup.selfLogo}" alt="${matchup.team1Name || 'Team 1'}" />
+              <span class="matchup-at">@</span>
+              <img src="${matchup.oppLogo}" alt="${matchup.team2Name || 'Team 2'}" />
+              <span class="team-name">${matchup.team2Name || 'Team 2'}</span>
             </div>
           </td>
+          <td>${LEAGUE_STRUCTURE[event.leagueKey]?.name || ''}</td>
           <td>${timeStr}</td>
           <td>${event.location}</td>
         </tr>
