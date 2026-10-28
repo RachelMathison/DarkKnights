@@ -1,194 +1,35 @@
 ---
 layout: default
-title:  PUHL Schedule
+title:  PUHL League Schedule
 permalink: /league-schedule/
 ---
 
-<!-- 1. FullCalendar & iCal Dependencies -->
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<!-- iCal Dependency -->
 <script src="https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/icalendar@6.1.11/index.global.min.js"></script>
 
-<style>
-  /* --- Schedule Filters Styling --- */
-  .league-filter-container {
-    background: #f8f9fa;
-    padding: 16px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    border: 1px solid #e9ecef;
-  }
-  .filter-section {
-    margin-bottom: 12px;
-  }
-  .filter-section:last-child {
-    margin-bottom: 0;
-  }
-  .filter-title {
-    font-weight: bold;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .team-checkboxes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-left: 24px;
-    margin-top: 6px;
-  }
-  .team-checkboxes.hidden {
-    display: none !important;
-  }
-  .filter-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-  }
-  .filter-team-icon {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    border-radius: 50%;
-    background-color: #eee;
-  }
+<h1>League Schedule</h1>
+<nav class="schedule-page-nav" aria-label="Schedule pages">
+  <a href="/league-calendar/">Calendar</a>
+</nav>
 
-  /* --- FullCalendar Layout Overrides --- */
-  .fc-daygrid-day-frame {
-    overflow: hidden !important;
-    position: relative !important;
-    min-height: 140px;
-  }
-
-  .fc-daygrid-day-events {
-    margin-bottom: 0 !important;
-    position: static !important;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .fc-daygrid-event-harness,
-  .fc-daygrid-event-harness-abs {
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-    width: 100% !important;
-    margin: 1px 0 !important;
-  }
-
-  .fc .fc-event {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: block !important;
-  }
-
-  .fc .fc-event-main {
-    padding: 0 !important;
-  }
-
-  /* --- Event Display Cards --- */
-  .custom-event-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 1px 0;
-  }
-
-  .custom-event-card .logo-circle {
-    width: 65px;
-    height: 65px;
-    border-radius: 50%;
-    background-color: color-mix(in srgb, var(--rink-color, var(--training-bg-light)) 12%, white);
-    border: 1px solid var(--rink-color, var(--gray-300));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-
-  .custom-event-card .logo-circle img {
-    
-    height: 60%;
-    object-fit: contain;
-  }
-
-  .custom-event-card .game-time {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: #111;
-    line-height: 1.1;
-    margin-top: 2px;
-    white-space: nowrap;
-  }
-
-  .custom-event-card.multi-game-card {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 3px;
-    align-items: center;
-    justify-content: center;
-    padding-bottom: 5px;
-  }
-
-  .custom-event-card.multi-game-card .logo-circle {
-    width: 40px;
-    height: 40px;
-  }
-
-  .custom-event-card.multi-game-card .logo-circle img {
-    width: 32px;
-    height: 32px;
-  }
-
-  .custom-event-card.multi-game-card .at-symbol {
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: #555;
-  }
-
-  .custom-event-card.multi-game-card .game-time {
-    width: 100%;
-    text-align: center;
-    font-size: 0.68rem;
-    margin-top: 0;
-  }
-  .fc-daygrid-day-bottom {
-    display: none;
-  }
-</style>
-
-
-<h1>Schedule</h1>
-
-<!-- Filter Controls -->
-<div class="league-filter-container" id="filter-controls"></div>
-
-<!-- Navigation Tabs -->
-<div class="schedule-tabs">
-  <button class="tab-btn active" onclick="switchView('calendar')">Calendar</button>
-  <button class="tab-btn" onclick="switchView('list')">List</button>
-</div>
-
-<!-- Tab 1: Calendar View -->
-<div id="calendar-view" class="view-content active">
-  <div id="schedule-legend" class="legend"></div>
-  <div id="calendar"></div>
-</div>
-
-<!-- Tab 2: List View -->
-<div id="list-view" class="view-content">
+<div id="list-view" class="view-content active">
   <h2>Upcoming Games</h2>
+  <div class="schedule-date-picker">
+    <div class="schedule-week-nav">
+      <button type="button" id="previous-schedule-week" aria-label="Previous week" onclick="shiftScheduleWeek(-1)">&lsaquo;</button>
+      <span id="schedule-week-label"></span>
+      <button type="button" aria-label="Next week" onclick="shiftScheduleWeek(1)">&rsaquo;</button>
+    </div>
+    <div id="day-selector" class="schedule-day-selector" aria-label="Upcoming game days"></div>
+  </div>
+  <div id="schedule-filters" class="schedule-filters">
+    <label id="show-all-teams-control" class="show-all-teams-control">
+      <input type="checkbox" id="show-all-teams" checked aria-controls="filter-controls" onchange="toggleShowAllTeams(this.checked)">
+      <span>Show all teams</span>
+    </label>
+    <div id="filter-controls" class="league-filter-container" hidden></div>
+  </div>
+  <button type="button" id="schedule-filter-toggle" class="schedule-filter-toggle" aria-controls="schedule-filters" aria-expanded="true" onclick="toggleScheduleFilters()">Hide Filters</button>
   <div id="upcoming-games-container">Loading schedule...</div>
 </div>
 
@@ -196,6 +37,7 @@ permalink: /league-schedule/
 // --- Storage Keys ---
 const STORAGE_KEY_LEAGUES = 'puhl_selected_leagues';
 const STORAGE_KEY_TEAMS = 'puhl_selected_teams';
+const STORAGE_KEY_SHOW_ALL_TEAMS = 'puhl_show_all_teams';
 
 // --- League & Team Configurations ---
 const LEAGUE_STRUCTURE = {
@@ -236,6 +78,7 @@ const teamLogos = window.pageTeamLogos || {};
 const activeLeagues = new Set();
 const activeTeams = new Set();
 const allTeamConfigs = [];
+let showAllTeamsMode = true;
 
 // Load state from localStorage or initialize defaults
 function loadSavedFilters() {
@@ -255,6 +98,12 @@ function loadSavedFilters() {
       league.teams.forEach(team => activeTeams.add(team.name));
     });
   }
+
+  const savedShowAllTeams = localStorage.getItem(STORAGE_KEY_SHOW_ALL_TEAMS);
+  const totalTeamCount = Object.values(LEAGUE_STRUCTURE).reduce((total, league) => total + league.teams.length, 0);
+  showAllTeamsMode = savedShowAllTeams === null
+    ? activeTeams.size === totalTeamCount && activeLeagues.size === Object.keys(LEAGUE_STRUCTURE).length
+    : savedShowAllTeams === 'true';
 }
 
 function saveFiltersToStorage() {
@@ -304,26 +153,6 @@ function getMatchupDetails(title) {
   };
 }
 
-// In the single-game calendar card, show the opponent when only one side of
-// the matchup is selected. This keeps the icon useful when filtering to one team.
-function getSingleTeamCalendarLogo(matchup) {
-  const team1Selected = matchup.team1Name && activeTeams.has(matchup.team1Name);
-  const team2Selected = matchup.team2Name && activeTeams.has(matchup.team2Name);
-
-  if (team1Selected && !team2Selected) return matchup.oppLogo;
-  if (team2Selected && !team1Selected) return matchup.selfLogo;
-  return matchup.selfLogo;
-}
-
-function getRinkColor(location) {
-  const value = String(location || '').toLowerCase();
-  if (value.includes('sherwood')) return 'var(--rink-sherwood)';
-  if (value.includes('mountain view')) return 'var(--rink-mv)';
-  if (value.includes('veterans') || value.includes('coliseum')) return 'var(--rink-vmc)';
-  if (value.includes('winterhawks') || value.includes('beaverton')) return 'var(--rink-wsc)';
-  return 'var(--training-bg-light)';
-}
-
 // Check if an event is active based on current selection
 function isEventActive(leagueKey, title) {
   if (!activeLeagues.has(leagueKey)) return false;
@@ -332,64 +161,14 @@ function isEventActive(leagueKey, title) {
          (matchup.team2Name && activeTeams.has(matchup.team2Name));
 }
 
-let globalCalendarInstance = null;
 let masterAllEvents = [];
+let scheduleWeekOffset = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
   loadSavedFilters();
   buildFilterUI();
-  
-  const calendarEl = document.getElementById('calendar');
-  globalCalendarInstance = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    height: 'auto',
-    aspectRatio: 1.35,
-    dayMaxEvents: true,
-    dayMaxEventRows: true,
-    headerToolbar: {
-      left: 'title',
-      center: '',
-      right: 'prev,next today'
-    },
-    events: function(fetchInfo, successCallback, failureCallback) {
-      const activeEvents = masterAllEvents.filter(e => isEventActive(e.leagueKey, e.title));
-      successCallback(activeEvents);
-    },
-    eventContent: function(arg) {
-      const matchup = getMatchupDetails(arg.event.title);
-      const timeStr = arg.event.start ? arg.event.start.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
-      
-      const currentDay = arg.event.startStr.split('T')[0];
-      const allDayEvents = globalCalendarInstance.getEvents().filter(e => {
-        return e.startStr.split('T')[0] === currentDay;
-      });
-
-      if (allDayEvents.length > 1) {
-        return {
-          html: `
-            <div class="custom-event-card multi-game-card">
-              <span class="logo-circle" style="--rink-color: ${getRinkColor(arg.event.extendedProps.location)}"><img src="${matchup.selfLogo}" alt="" /></span>
-              <span class="at-symbol">@</span>
-              <span class="logo-circle" style="--rink-color: ${getRinkColor(arg.event.extendedProps.location)}"><img src="${matchup.oppLogo}" alt="" /></span>
-              <div class="game-time">${timeStr}</div>
-            </div>
-          `
-        };
-      }
-
-      return {
-        html: `
-          <div class="custom-event-card">
-            <div class="logo-circle" style="--rink-color: ${getRinkColor(arg.event.extendedProps.location)}">
-              <img src="${getSingleTeamCalendarLogo(matchup)}" alt="${arg.event.title}" />
-            </div>
-            <div class="game-time">${timeStr}</div>
-          </div>
-        `
-      };
-    }
-  });
-
+  initializeShowAllTeamsControl();
+  setupStickySchedulePicker();
   fetchAllIcsEvents();
 });
 
@@ -417,8 +196,9 @@ function buildFilterUI() {
       html += `
         <label class="filter-label">
           <input type="checkbox" class="team-cb-${leagueKey}" value="${team.name}" ${teamChecked} onchange="toggleTeam('${team.name}', this.checked)">
+          <span class="filter-check-indicator" aria-hidden="true"></span>
           <img src="${imgPath}" alt="${team.name}" class="filter-team-icon" />
-          ${team.name}
+          <span class="filter-team-name">${team.name}</span>
         </label>
       `;
     });
@@ -456,28 +236,89 @@ function toggleTeam(teamName, isChecked) {
   refreshViews();
 }
 
-function refreshViews() {
-  if (globalCalendarInstance) {
-    globalCalendarInstance.refetchEvents();
+function initializeShowAllTeamsControl() {
+  const control = document.getElementById('show-all-teams');
+  const filterPanel = document.getElementById('filter-controls');
+  if (!control || !filterPanel) return;
+
+  control.checked = showAllTeamsMode;
+  filterPanel.hidden = showAllTeamsMode;
+}
+
+function toggleShowAllTeams(showAll) {
+  showAllTeamsMode = showAll;
+  localStorage.setItem(STORAGE_KEY_SHOW_ALL_TEAMS, String(showAll));
+
+  const filterPanel = document.getElementById('filter-controls');
+  if (filterPanel) filterPanel.hidden = showAll;
+
+  if (showAll) {
+    activeLeagues.clear();
+    activeTeams.clear();
+    Object.entries(LEAGUE_STRUCTURE).forEach(([leagueKey, league]) => {
+      activeLeagues.add(leagueKey);
+      league.teams.forEach(team => activeTeams.add(team.name));
+    });
+    saveFiltersToStorage();
+    buildFilterUI();
+    refreshViews();
   }
+}
+
+function toggleScheduleFilters() {
+  const filterSection = document.getElementById('schedule-filters');
+  if (!filterSection) return;
+
+  filterSection.hidden = !filterSection.hidden;
+  updateFilterToggle(filterSection, filterSection.hidden);
+}
+
+function updateFilterToggle(filterSection, isHidden) {
+  const toggle = document.getElementById('schedule-filter-toggle');
+  if (!filterSection || !toggle) return;
+
+  toggle.textContent = isHidden ? 'Show Filters' : 'Hide Filters';
+  toggle.setAttribute('aria-expanded', String(!isHidden));
+}
+
+function refreshViews() {
   renderListView();
 }
 
-function switchView(viewName) {
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelectorAll('.view-content').forEach(view => view.classList.remove('active'));
+function getLocalDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
-  if (viewName === 'calendar') {
-    document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
-    document.getElementById('calendar-view').classList.add('active');
-    if (globalCalendarInstance) {
-      globalCalendarInstance.updateSize();
-    }
-  } else {
-    document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
-    document.getElementById('list-view').classList.add('active');
-    renderListView();
-  }
+function setupStickySchedulePicker() {
+  const picker = document.querySelector('.schedule-date-picker');
+  if (!picker) return;
+
+  const updateStickyState = () => {
+    const top = picker.getBoundingClientRect().top;
+    picker.classList.toggle('is-stuck', Math.abs(top) <= 1);
+  };
+  window.addEventListener('scroll', updateStickyState, { passive: true });
+  updateStickyState();
+}
+
+function scrollToScheduleDay(dateKey) {
+  const dayGroup = document.getElementById(`schedule-day-${dateKey}`);
+  const picker = document.querySelector('.schedule-date-picker');
+  if (!dayGroup) return;
+
+  const targetTop = dayGroup.getBoundingClientRect().top + window.scrollY - (picker?.offsetHeight || 0) - 12;
+  window.scrollTo({ top: targetTop, behavior: 'smooth' });
+}
+
+function shiftScheduleWeek(amount) {
+  scheduleWeekOffset = Math.max(0, scheduleWeekOffset + amount);
+  const activeEvents = masterAllEvents
+    .filter(event => isEventActive(event.leagueKey, event.title))
+    .filter(event => event.start && new Date(event.start) > new Date());
+  renderDaySelector(activeEvents);
 }
 
 async function fetchAllIcsEvents() {
@@ -508,11 +349,6 @@ async function fetchAllIcsEvents() {
   });
 
   await Promise.all(promises);
-  
-  if (globalCalendarInstance) {
-    globalCalendarInstance.render();
-    globalCalendarInstance.refetchEvents();
-  }
   renderListView();
 }
 
@@ -521,14 +357,16 @@ function renderListView() {
   if (!container) return;
 
   const filteredEvents = masterAllEvents.filter(e => isEventActive(e.leagueKey, e.title));
-
-  if (filteredEvents.length === 0) {
-    container.innerHTML = '<p>No games found matching the selected filters.</p>';
-    return;
-  }
+  const noFilteredEvents = filteredEvents.length === 0;
 
   const now = new Date();
   const upcomingEvents = filteredEvents.filter(e => e.start && new Date(e.start) > now);
+  renderDaySelector(upcomingEvents);
+
+  if (noFilteredEvents) {
+    container.innerHTML = '<p>No games found matching the selected filters.</p>';
+    return;
+  }
 
   if (upcomingEvents.length === 0) {
     container.innerHTML = '<p>No upcoming games scheduled.</p>';
@@ -539,15 +377,16 @@ function renderListView() {
 
   const grouped = {};
   upcomingEvents.forEach(e => {
-    const dateStr = new Date(e.start).toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-    if (!grouped[dateStr]) grouped[dateStr] = [];
-    grouped[dateStr].push(e);
+    const dateKey = getLocalDateKey(new Date(e.start));
+    if (!grouped[dateKey]) grouped[dateKey] = [];
+    grouped[dateKey].push(e);
   });
 
   let html = '';
-  for (const date in grouped) {
+  for (const dateKey in grouped) {
+    const date = new Date(`${dateKey}T12:00:00`).toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     html += `
-      <div class="date-group">
+      <div class="date-group" id="schedule-day-${dateKey}">
         <h3 class="date-header">${date}</h3>
         <table class="schedule-table league-matchup-table">
           <thead>
@@ -561,8 +400,8 @@ function renderListView() {
           <tbody>
     `;
 
-    grouped[date].forEach(event => {
-      const timeStr = new Date(event.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+    grouped[dateKey].forEach(event => {
+      const timeStr = new Date(event.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
       const matchup = getMatchupDetails(event.title);
 
       html += `
@@ -576,9 +415,9 @@ function renderListView() {
               <span class="team-name">${matchup.team2Name || 'Team 2'}</span>
             </div>
           </td>
-          <td>${LEAGUE_STRUCTURE[event.leagueKey]?.name || ''}</td>
-          <td>${timeStr}</td>
-          <td>${event.location}</td>
+          <td class="division-cell">${LEAGUE_STRUCTURE[event.leagueKey]?.name || ''}</td>
+          <td class="time-cell">${timeStr}</td>
+          <td class="location-cell">${event.location}</td>
         </tr>
       `;
     });
@@ -586,5 +425,39 @@ function renderListView() {
     html += `</tbody></table></div>`;
   }
   container.innerHTML = html;
+}
+
+function renderDaySelector(upcomingEvents) {
+  const selector = document.getElementById('day-selector');
+  const weekLabel = document.getElementById('schedule-week-label');
+  const previousButton = document.getElementById('previous-schedule-week');
+  if (!selector || !weekLabel) return;
+
+  const eventCounts = {};
+  upcomingEvents.forEach(event => {
+    const key = getLocalDateKey(new Date(event.start));
+    eventCounts[key] = (eventCounts[key] || 0) + 1;
+  });
+
+  const firstDay = new Date();
+  firstDay.setHours(0, 0, 0, 0);
+  firstDay.setDate(firstDay.getDate() + scheduleWeekOffset * 7);
+  const lastDay = new Date(firstDay);
+  lastDay.setDate(firstDay.getDate() + 6);
+  const formatRangeDate = date => date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  weekLabel.textContent = `${formatRangeDate(firstDay)} – ${formatRangeDate(lastDay)}`;
+  if (previousButton) previousButton.disabled = scheduleWeekOffset === 0;
+
+  selector.innerHTML = Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(firstDay);
+    day.setDate(firstDay.getDate() + index);
+    const key = getLocalDateKey(day);
+    const count = eventCounts[key] || 0;
+    return `<button type="button" class="schedule-day-option ${count ? '' : 'no-games'}" ${count ? `onclick="scrollToScheduleDay('${key}')"` : 'disabled'} aria-label="${day.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}: ${count} games">
+      <span class="schedule-day-name">${day.toLocaleDateString([], { weekday: 'short' })}</span>
+      <span class="schedule-day-date">${day.getDate()}</span>
+      <span class="schedule-day-count">${count}</span>
+    </button>`;
+  }).join('');
 }
 </script>

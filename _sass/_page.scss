@@ -26,6 +26,11 @@
   }
 }
 
+/* Let the league schedule's sticky date selector move with the viewport. */
+.page-stage:has(.schedule-date-picker) {
+  overflow: visible;
+}
+
 /* ---------- the white card ---------- */
 .card {
   position: relative;
